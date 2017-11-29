@@ -91,7 +91,8 @@ int parse_cmd_line(int argc, char *argv[])
    count++;
    if (v_flag)
    {
-      printf("count in parse_cmd_line: %d flags: %d argc: %d\n", count, flags, argc);
+      printf("count in parse_cmd_line: %d flags: %d argc: %d\n", 
+            count, flags, argc);
    }
    while (count < argc)
    {
@@ -141,12 +142,14 @@ char **parse_path(char *string, int *path_count)
       }
       count++;
       *path_count = *path_count + 1;
-      if ((path_ptr = (char**) realloc(path_ptr, sizeof(char *) * count)) == NULL)
+      if ((path_ptr = (char**) realloc(path_ptr, sizeof(char *) * count)) 
+            == NULL)
       {
          perror("realloc");
          exit(ERROR);
       }
-      if ((path_ptr[count - 1] = (char *) malloc(sizeof(strlen(path_ptr[count - 1])))) == NULL)
+      if ((path_ptr[count - 1] = (char *) malloc(sizeof(strlen(
+            path_ptr[count - 1])))) == NULL)
       {
          perror("malloc");
          exit(ERROR);
@@ -164,6 +167,21 @@ char **parse_path(char *string, int *path_count)
    }
 
    return path_ptr;
+}
+
+void get_partition(FILE *image)
+{
+   if (fseek(image, 446, SEEK_SET) != 0)
+   {
+      perror("fseek");
+      exit(ERROR);
+   }
+
+   if (!fread(&part, sizeof(struct partition), 1, image))
+   {
+      perror("get_partition(): fread");
+      exit(ERROR);
+   }
 }
 
 void get_super_block(FILE *image)
@@ -205,8 +223,8 @@ void fill_bitmaps(FILE *image)
       exit(ERROR);
    }
 
-   //printf("inode_bitmap: %s\n", inode_bitmap);
-   //printf("zone_bitmap: %s\n", zone_bitmap);
+   printf("inode_bitmap: %x\n", inode_bitmap);
+   printf("zone_bitmap: %x\n", zone_bitmap);
 }
 
 void fill_inodes(FILE *image)
@@ -223,6 +241,21 @@ void fill_inodes(FILE *image)
    }
 }
 
+void print_partition(struct partition part)
+{
+   printf("Partition Contents:\n");
+   printf("bootind      0x%x\n", part.bootind);
+   printf("start_head   %d\n", part.start_head);
+   printf("start_sec    %d\n", part.start_sec);
+   printf("start_cyl    %d\n", part.start_cyl);
+   printf("type         0x%x\n", part.type);
+   printf("end_head     %d\n", part.end_head);
+   printf("end_sec      %d\n", part.end_sec);
+   printf("end_cyl      %d\n", part.end_cyl);
+   printf("lFirst       %d\n", part.lFirst);
+   printf("size         %d\n", part.size);
+}
+
 void print_super_block(struct superblock sb)
 {
    printf("Superblock Contents:\n");
@@ -231,7 +264,8 @@ void print_super_block(struct superblock sb)
    printf("  i_blocks       %d\n", sb.i_blocks);
    printf("  z_blocks       %d\n", sb.z_blocks);
    printf("  firstdata      %d\n", sb.firstdata);
-   printf("  log_zone_size  %d (zone size: %d)\n", sb.log_zone_size, sb.blocksize);
+   printf("  log_zone_size  %d (zone size: %d)\n",
+         sb.log_zone_size, sb.blocksize);
    printf("  max_file       %lu\n", sb.max_file);
    printf("  magic          0x%04x\n", sb.magic);
    printf("  zones          %d\n", sb.zones);

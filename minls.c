@@ -54,9 +54,14 @@ int main(int argc, char *argv[])
       perror("open");
       exit(ERROR);
    }
-   
+ 
+   get_partition(image_file_fd);
+   if (v_flag)
+   {
+      print_partition(part);
+   }
+
    get_super_block(image_file_fd);
-  
    if (v_flag) { 
       print_super_block(sb);
    }
@@ -64,6 +69,10 @@ int main(int argc, char *argv[])
    fill_bitmaps(image_file_fd);
    fill_inodes(image_file_fd);
 
+   if (v_flag)
+   {
+      print_inode(&inodes[0]);
+   }
    return SUCCESS;
 }
 

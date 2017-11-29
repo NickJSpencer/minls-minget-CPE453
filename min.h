@@ -9,7 +9,7 @@
    #define FALSE 0
    #define DIRECT_ZONES 7
    
-   struct __attribute__ ((__packed__)) superblock { /* Minix Version 3 Superblock
+   struct __attribute__ ((__packed__)) superblock { /* Minix Version 3 Superbloc
                         * this structure found in fs/super.h
                         * in minix 3.1.1
                         */
@@ -44,8 +44,22 @@
       uint32_t unused;
    };
 
+   struct __attribute__ ((__packed__)) partition {
+      uint8_t bootind;
+      uint8_t start_head;
+      uint8_t start_sec;
+      uint8_t start_cyl;
+      uint8_t type;
+      uint8_t end_head;
+      uint8_t end_sec;
+      uint8_t end_cyl;
+      uint32_t lFirst;
+      uint32_t size;
+   };
+
    struct superblock sb;
    struct inode *inodes;   
+   struct partition part;
 
    short p_flag;
    short s_flag;
@@ -68,6 +82,8 @@
    void print_usage(char *argv[]);
    int parse_cmd_line(int argc, char *argv[]);
    char **parse_path(char *string, int *path_count);
+
+   void get_partition(FILE *fd);
    void get_super_block(FILE *fd);
    void print_super_block(struct superblock sb);
    void fill_inodes(FILE *fd);
