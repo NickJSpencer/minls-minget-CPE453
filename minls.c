@@ -55,19 +55,29 @@ int main(int argc, char *argv[])
       exit(ERROR);
    }
  
+   /* Load partition table */
    get_partition(image_file_fd);
    if (v_flag)
    {
       print_partition(part);
    }
 
+   /* Load and print super block */
    get_super_block(image_file_fd);
    if (v_flag) { 
       print_super_block(sb);
    }
 
-   fill_bitmaps(image_file_fd);
-   fill_inodes(image_file_fd);
+   /* Fill i-node and zone bitmaps */
+   get_bitmaps(image_file_fd);
+
+   /* Load inodes into local inode list */
+   get_inodes(image_file_fd);
+   /* Print root's inode and direct zones */
+   if (v_flag) {
+      print_inode(&inodes[0]);
+      print_inode_zones(&inodes[0]);
+   }
 
    if (v_flag)
    {

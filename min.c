@@ -5,28 +5,6 @@
 
 #include "min.h"
 
-/* Print the usage statement.
- * minls and minget have the same usage statement, 
- * except for the first line. */
-void print_usage(char *argv[])
-{
-   if (!strcmp(argv[0], "./minls"))
-   {
-      printf("usage: minls [ -v ] [ -p num [ -s num ] ] imagefile [path]\n");
-   }
-   else if (!strcmp(argv[0], "./minget"))
-   {
-      printf("usage: minget [ -v ] [ -p part [ -s subpart ] ] imagefile ");
-      printf("srcpath [ dstpath ]");
-   }
-   printf("Options:\n");
-   printf("-p part    --- select partition for filesystem (default: none)\n");
-   printf("-s sub     --- select subpartition for filesystem (default: none)");
-   printf("\n");
-   printf("-h help    --- print usage information and exit\n");
-   printf("-v verbose --- increase verbosity level\n");
-}
-
 /* Sets the flags, image_file, src_path, and dst_path 
  * based on the cmd line args. */
 int parse_cmd_line(int argc, char *argv[])
@@ -92,7 +70,7 @@ int parse_cmd_line(int argc, char *argv[])
    if (v_flag)
    {
       printf("count in parse_cmd_line: %d flags: %d argc: %d\n", 
-            count, flags, argc);
+         count, flags, argc);
    }
    while (count < argc)
    {
@@ -171,22 +149,21 @@ char **parse_path(char *string, int *path_count)
 
 void get_partition(FILE *image)
 {
-   if (fseek(image, 446, SEEK_SET) != 0)
+   if (fseek(image, PARTITION_TABLE_LOCATION, SEEK_SET) != 0)
    {
       perror("fseek");
       exit(ERROR);
    }
 
-   if (!fread(&part, sizeof(struct partition), 1, image))
+   if (!fread(&part, sizeof(part), 1, image))
    {
-      perror("get_partition(): fread");
+      perror("fread");
       exit(ERROR);
    }
 }
 
 void get_super_block(FILE *image)
 {
-
    /* Seek past boot block */
    if (fseek(image, 1024, SEEK_SET) != 0) {
       perror("fseek");
@@ -201,7 +178,7 @@ void get_super_block(FILE *image)
    }
 }
 
-void fill_bitmaps(FILE *image)
+void get_bitmaps(FILE *image)
 {
    inode_bitmap = (char *) malloc(sb.blocksize);
    zone_bitmap = (char *) malloc(sb.blocksize);
@@ -222,23 +199,42 @@ void fill_bitmaps(FILE *image)
       perror("fread");
       exit(ERROR);
    }
-
-   printf("inode_bitmap: %x\n", inode_bitmap);
-   printf("zone_bitmap: %x\n", zone_bitmap);
 }
 
-void fill_inodes(FILE *image)
+void get_inodes(FILE *image)
 {
-   int i;
+   /* Allocate memory for local inode list */
    inodes = (struct inode *) malloc(sizeof(struct inode) * sb.ninodes);
 
-   for (i = 0; i < sb.ninodes; i++)
-   {
-      if (!fread(&inodes[i], sizeof(struct inode), 1, image)) {
-         perror("fread");
-         exit(ERROR);
-      }
+   /* Read in inodes into local inode list 
+    * No need to fseek -- the file pointer is already pointing to
+    * inode block at this point */
+   if (!fread(inodes, sizeof(struct inode), sb.ninodes, image)) {
+      perror("fread");
+      exit(ERROR);
    }
+}
+
+/* Print the usage statement.
+ * minls and minget have the same usage statement, 
+ * except for the first line. */
+void print_usage(char *argv[])
+{
+   if (!strcmp(argv[0], "./minls"))
+   {
+      printf("usage: minls [ -v ] [ -p num [ -s num ] ] imagefile [path]\n");
+   }
+   else if (!strcmp(argv[0], "./minget"))
+   {
+      printf("usage: minget [ -v ] [ -p part [ -s subpart ] ] imagefile ");
+      printf("srcpath [ dstpath ]");
+   }
+   printf("Options:\n");
+   printf("-p part    --- select partition for filesystem (default: none)\n");
+   printf("-s sub     --- select subpartition for filesystem (default: none)");
+   printf("\n");
+   printf("-h help    --- print usage information and exit\n");
+   printf("-v verbose --- increase verbosity level\n");
 }
 
 void print_partition(struct partition part)
@@ -266,7 +262,7 @@ void print_super_block(struct superblock sb)
    printf("  firstdata      %d\n", sb.firstdata);
    printf("  log_zone_size  %d (zone size: %d)\n",
          sb.log_zone_size, sb.blocksize);
-   printf("  max_file       %lu\n", sb.max_file);
+   printf("  max_file       %d\n", sb.max_file);
    printf("  magic          0x%04x\n", sb.magic);
    printf("  zones          %d\n", sb.zones);
    printf("  blocksize      %d\n", sb.blocksize);
@@ -282,3 +278,15 @@ void print_inode(struct inode * node)
    printf("gid        %d\n", node->gid);
    printf("size       %d\n", node->size);
 }
+
+void print_inode_zones(struct inode * node) {
+   int i;
+   printf("Direct zones:\n");
+   for (i = 0; i < DIRECT_ZONES; i++) {
+      printf("%17s%d] = %5d\n", "zone[", i, node->zone[i]);
+   }
+   printf("uint32_t %11s %6d\n", "indirect", node->indirect);
+   printf("uint32_t %9s %8d\n", "double", node->two_indirect);
+}
+
+

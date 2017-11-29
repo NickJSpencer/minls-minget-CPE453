@@ -8,12 +8,13 @@
    #define TRUE 1
    #define FALSE 0
    #define DIRECT_ZONES 7
-   
-   struct __attribute__ ((__packed__)) superblock { /* Minix Version 3 Superbloc
-                        * this structure found in fs/super.h
-                        * in minix 3.1.1
-                        */
-      /* on disk. These fields and orientation are non–negotiable */
+   #define PARTITION_TABLE_LOCATION 446
+
+   /* Minix Version 3 Superblock
+    * this structure found in fs/super.h
+    * in minix 3.1.1
+    * on disk. These fields and orientation are non–negotiable */
+   struct __attribute__ ((__packed__)) superblock { 
       uint32_t ninodes;         /* number of inodes in this filesystem */
       uint16_t pad1;            /* make things line up properly */
       int16_t i_blocks;         /* # of blocks used by inode bit map */
@@ -79,14 +80,18 @@
    char *inode_bitmap;
    char *zone_bitmap;
 
-   void print_usage(char *argv[]);
    int parse_cmd_line(int argc, char *argv[]);
    char **parse_path(char *string, int *path_count);
 
    void get_partition(FILE *fd);
    void get_super_block(FILE *fd);
+   void get_inodes(FILE *fd);
+   void get_bitmaps(FILE *fd);
+
+   void print_partition(struct partition part);
    void print_super_block(struct superblock sb);
-   void fill_inodes(FILE *fd);
+   void print_usage(char *argv[]);
    void print_inode(struct inode * node);
-   void fill_bitmaps(FILE *fd);
+   void print_inode_zones(struct inode *node);
+
 #endif
