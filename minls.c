@@ -19,17 +19,19 @@ int main(int argc, char *argv[])
    }
    
    parse_cmd_line(argc, argv);
-      
-   printf("p flag: %hu | prim_part = %d\n", p_flag, prim_part);
-   printf("s flag: %hu | sub_part  = %d\n", s_flag, sub_part);
-   printf("h flag: %hu\n", h_flag);
-   printf("v flag: %hu\n\n", v_flag);
-   
-   if (image_file != NULL)
+
+   if (v_flag) {      
+      printf("p flag: %hu | prim_part = %d\n", p_flag, prim_part);
+      printf("s flag: %hu | sub_part  = %d\n", s_flag, sub_part);
+      printf("h flag: %hu\n", h_flag);
+      printf("v flag: %hu\n\n", v_flag);
+   }
+
+   if (image_file != NULL && v_flag)
    {
       printf("image_file: %s\n", image_file);
    }
-   if (src_path != NULL)
+   if (src_path != NULL && v_flag)
    {
       printf("src_path: ");
       for (i = 0; i < src_path_count; i++)
@@ -38,7 +40,7 @@ int main(int argc, char *argv[])
       }
       printf("\n");
    }
-   if (dst_path != NULL)
+   if (dst_path != NULL && v_flag)
    {
       printf("dst_path: ");
       for (i = 0; i < dst_path_count; i++)
@@ -47,23 +49,17 @@ int main(int argc, char *argv[])
       }
       printf("\n");
    }   
-   if ((image_file_fd = open(image_file, O_RDONLY)) == -1)
+   if ((image_file_fd = fopen(image_file, "r")) == NULL)
    {
       perror("open");
       exit(ERROR);
    }
    
-   printf("\nfd: %d\n", (int) image_file_fd);
-   
-/*    if ((fread(&i, sizeof(int), 1, image_file_fd)) != 1)
-   {
-      perror("fread");
-      exit(ERROR);
-   } */
-   
    get_super_block(image_file_fd);
-
-   print_super_block(sb);
+  
+   if (v_flag) { 
+      print_super_block(sb);
+   }
 
    fill_bitmaps(image_file_fd);
 

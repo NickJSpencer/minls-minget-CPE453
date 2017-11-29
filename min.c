@@ -34,7 +34,6 @@ int parse_cmd_line(int argc, char *argv[])
    int opt;
    int count = 0;
    int flags;
-   char *image;
    char *s_path;
    char *d_path;
 
@@ -90,26 +89,35 @@ int parse_cmd_line(int argc, char *argv[])
     * The remaining args will be used for image_file, src_path, and dst_path */
    flags = count;
    count++;
-   printf("count in parse_cmd_line: %d flags: %d argc: %d\n", count, flags, argc);
+   if (v_flag)
+   {
+      printf("count in parse_cmd_line: %d flags: %d argc: %d\n", count, flags, argc);
+   }
    while (count < argc)
    {
       int arg = count - flags;
       if (arg == 1)
       {
          image_file = argv[count];
-         printf("arg 1: %s\n", image_file);
+         if (v_flag) {
+            printf("arg 1: %s\n", image_file);
+         }
       }
       else if (arg == 2)
       {
          s_path = argv[count];
          src_path = parse_path(s_path, &src_path_count);
-         printf("arg 2: %s\n", s_path);
+         if (v_flag) {
+            printf("arg 2: %s\n", s_path);
+         }
       }
       else if (arg == 3)
       {
          d_path = argv[count];
          dst_path = parse_path(d_path, &dst_path_count);
-         printf("arg 3: %s\n", d_path);
+         if (v_flag) {
+            printf("arg 3: %s\n", d_path);
+         }
       }
       count++;
    }
@@ -120,7 +128,6 @@ int parse_cmd_line(int argc, char *argv[])
 char **parse_path(char *string, int *path_count)
 {
    int i;
-   char *temp;
    char **path_ptr = (char **) malloc(sizeof(char *));
    int count = 0;
 
@@ -128,7 +135,10 @@ char **parse_path(char *string, int *path_count)
    count++;
    while (path_ptr[count - 1] != NULL)
    {
-      printf("%d: %s\n", count - 1, path_ptr[count - 1]);
+      if(v_flag)
+      {
+         printf("%d: %s\n", count - 1, path_ptr[count - 1]);
+      }
       count++;
       *path_count = *path_count + 1;
       if ((path_ptr = (char**) realloc(path_ptr, sizeof(char *) * count)) == NULL)
@@ -143,53 +153,47 @@ char **parse_path(char *string, int *path_count)
       }
 
       path_ptr[count - 1] = strtok(NULL, "/");
-      //temp = strtok(NULL, "/");
-      //printf("%s\n", temp);
    }
-   printf("count: %d\n", count);
-   for (i = 0; i < count; i++)
-   {
-      printf("/%s", path_ptr[i]);
+   if (v_flag) {
+      printf("count: %d\n", count);
+      for (i = 0; i < count; i++)
+      {
+         printf("/%s", path_ptr[i]);
+      }
+      printf("\n");
    }
-   printf("\n");
 
    return path_ptr;
 }
 
-void get_super_block(FILE *fd)
+void get_super_block(FILE *image)
 {
-   char buffer[1024];
 
-   if (read(fd, buffer, 1024) == -1)
-   {
-      perror("read");
+   /* Seek past boot block */
+   if (fseek(image, 1024, SEEK_SET) != 0) {
+      perror("fseek");
       exit(ERROR);
    }
-         
-   if (read(fd, &sb, sizeof(struct superblock)) == -1)
+    
+   /* Read in super block */
+   if (!fread(&sb, sizeof(sb), 1, image))
    {
-      perror("read");
-      exit(ERROR);
-   }
-   
-   if (read(fd, buffer, 1024 - sizeof(struct superblock)) == -1)
-   {
-      perror("read");
+      perror("fread");
       exit(ERROR);
    }
 }
 
-void fill_bitmaps(FILE *fd)
+void fill_bitmaps(FILE *image)
 {
    inode_bitmap = (char *) malloc(sb.blocksize);
    zone_bitmap = (char *) malloc(sb.blocksize);
 
-   if (read(fd, inode_bitmap, sb.blocksize) == -1)
+   if (read(image, inode_bitmap, sb.blocksize) == -1)
    {
       perror("read");
       exit(ERROR);
    }
-   if (read(fd, zone_bitmap, sb.blocksize) == -1)
+   if (read(image, zone_bitmap, sb.blocksize) == -1)
    {
       perror("read");
       exit(ERROR);
@@ -199,7 +203,7 @@ void fill_bitmaps(FILE *fd)
    printf("zone_bitmap: %02x\n\n", zone_bitmap);
 }
 
-void fill_inodes(FILE *fd)
+void fill_inodes(FILE *image)
 {
    int i;
    char buffer[sb.blocksize];
@@ -210,7 +214,7 @@ void fill_inodes(FILE *fd)
    for (i = 0; i < sb.ninodes; i++)
    {
       inodes[i] = (struct inode *) malloc(sizeof(struct inode));
-      if (read(fd, inodes[i], sizeof(struct inode)) == -1)
+      if (read(image, inodes[i], sizeof(struct inode)) == -1)
       {
          perror("read");
          exit(ERROR);
