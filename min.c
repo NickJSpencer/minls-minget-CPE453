@@ -149,7 +149,13 @@ char **parse_path(char *string, int *path_count)
 
 void get_partition(FILE *image)
 {
-   if (fseek(image, PARTITION_TABLE_LOCATION, SEEK_SET) != 0)
+   if(!p_flag)
+   {
+      return;
+   }
+
+   if (fseek(image, PARTITION_TABLE_LOCATION + sizeof(struct partition) *
+            prim_part, SEEK_SET) != 0)
    {
       perror("fseek");
       exit(ERROR);
@@ -160,12 +166,37 @@ void get_partition(FILE *image)
       perror("fread");
       exit(ERROR);
    }
+
+   if (!s_flag)
+   {
+      return;
+   }
+
+   if (fseek(image, part.lFirst * SECTOR_SIZE + PARTITION_TABLE_LOCATION + 
+            sizeof(struct partition) * sub_part, SEEK_SET) != 0)
+   {
+      perror("fseek");
+      exit(ERROR);
+   }
+
+   if (!fread(&part, sizeof(struct partition), 1, image))
+   {
+      perror("fread");
+      exit(ERROR);
+   }
 }
 
 void get_super_block(FILE *image)
 {
+   int seek_val = 1024;
+
+   if (p_flag)
+   {
+      seek_val += part.lFirst * SECTOR_SIZE;
+   }
+
    /* Seek past boot block */
-   if (fseek(image, 1024, SEEK_SET) != 0) {
+   if (fseek(image, seek_val, SEEK_SET) != 0) {
       perror("fseek");
       exit(ERROR);
    }
@@ -191,12 +222,12 @@ void get_bitmaps(FILE *image)
    
    /* Load i-node bitmap */
    if (!fread(inode_bitmap, sb.i_blocks * sb.blocksize, 1, image)) {
-      perror("fread");
+      perror("1fread");
       exit(ERROR);
    }
    /* Load zone bitmap */
    if (!fread(zone_bitmap, sb.z_blocks * sb.blocksize, 1, image)) {
-      perror("fread");
+      perror("2fread");
       exit(ERROR);
    }
 }
@@ -248,7 +279,7 @@ void print_partition(struct partition part)
    printf("end_head     %d\n", part.end_head);
    printf("end_sec      %d\n", part.end_sec);
    printf("end_cyl      %d\n", part.end_cyl);
-   printf("lFirst       %d\n", part.lFirst);
+   printf("lFirst       %lu\n", part.lFirst);
    printf("size         %d\n", part.size);
 }
 

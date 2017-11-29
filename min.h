@@ -9,6 +9,7 @@
    #define FALSE 0
    #define DIRECT_ZONES 7
    #define PARTITION_TABLE_LOCATION 446
+   #define SECTOR_SIZE 512  
 
    /* Minix Version 3 Superblock
     * this structure found in fs/super.h
@@ -84,6 +85,7 @@
    char **parse_path(char *string, int *path_count);
 
    void get_partition(FILE *fd);
+   void print_partition(struct partition part);
    void get_super_block(FILE *fd);
    void get_inodes(FILE *fd);
    void get_bitmaps(FILE *fd);

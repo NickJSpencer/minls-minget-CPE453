@@ -51,14 +51,15 @@ int main(int argc, char *argv[])
    }   
    if ((image_file_fd = fopen(image_file, "r")) == NULL)
    {
-      perror("open");
+      perror("1open");
       exit(ERROR);
    }
- 
+   
    /* Load partition table */
    get_partition(image_file_fd);
    if (v_flag)
    {
+      printf("Partition %d:\n", prim_part);
       print_partition(part);
    }
 
