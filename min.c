@@ -175,7 +175,7 @@ void get_super_block(FILE *image)
       exit(ERROR);
    }
     
-   /* Read in super block */
+   /* Load super block */
    if (!fread(&sb, sizeof(sb), 1, image))
    {
       perror("fread");
@@ -188,40 +188,39 @@ void fill_bitmaps(FILE *image)
    inode_bitmap = (char *) malloc(sb.blocksize);
    zone_bitmap = (char *) malloc(sb.blocksize);
 
-   if (read(image, inode_bitmap, sb.blocksize) == -1)
-   {
-      perror("read");
+   /* Seek past boot block and super block */
+   if (fseek(image, 2 * sb.blocksize, SEEK_SET) != 0) {
+      perror("fseek");
       exit(ERROR);
    }
-   if (read(image, zone_bitmap, sb.blocksize) == -1)
-   {
-      perror("read");
+   
+   /* Load i-node bitmap */
+   if (!fread(inode_bitmap, sb.i_blocks * sb.blocksize, 1, image)) {
+      perror("fread");
+      exit(ERROR);
+   }
+   /* Load zone bitmap */
+   if (!fread(zone_bitmap, sb.z_blocks * sb.blocksize, 1, image)) {
+      perror("fread");
       exit(ERROR);
    }
 
-   printf("inode_bitmap: %02x\n", inode_bitmap);
-   printf("zone_bitmap: %02x\n\n", zone_bitmap);
+   //printf("inode_bitmap: %s\n", inode_bitmap);
+   //printf("zone_bitmap: %s\n", zone_bitmap);
 }
 
 void fill_inodes(FILE *image)
 {
    int i;
-   char buffer[sb.blocksize];
-   inodes = (struct inode **) malloc(sizeof(struct inode *) * sb.ninodes);
-   
-   //printf("size of inode: %d", sizeof(struct inode));
+   inodes = (struct inode *) malloc(sizeof(struct inode) * sb.ninodes);
 
    for (i = 0; i < sb.ninodes; i++)
    {
-      inodes[i] = (struct inode *) malloc(sizeof(struct inode));
-      if (read(image, inodes[i], sizeof(struct inode)) == -1)
-      {
-         perror("read");
+      if (!fread(&inodes[i], sizeof(struct inode), 1, image)) {
+         perror("fread");
          exit(ERROR);
       }
    }
-
-   return 0;
 }
 
 void print_super_block(struct superblock sb)

@@ -62,11 +62,7 @@ int main(int argc, char *argv[])
    }
 
    fill_bitmaps(image_file_fd);
-
    fill_inodes(image_file_fd);
-   print_inode(inodes[0]);
-   print_inode(inodes[1]);
-   print_inode(inodes[2]);
 
    return SUCCESS;
 }

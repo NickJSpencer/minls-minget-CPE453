@@ -45,7 +45,7 @@
    };
 
    struct superblock sb;
-   struct inode **inodes;   
+   struct inode *inodes;   
 
    short p_flag;
    short s_flag;

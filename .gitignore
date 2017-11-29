@@ -1,3 +1,4 @@
 *.o
 minls
 minget
+*.swp
