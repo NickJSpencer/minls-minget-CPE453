@@ -44,6 +44,7 @@
       uint32_t unused;
    };
 
+   struct superblock sb;
    struct inode **inodes;   
 
    short p_flag;
@@ -61,10 +62,15 @@
    int src_path_count;
    int dst_path_count;
 
+   char *inode_bitmap;
+   char *zone_bitmap;
+
    void print_usage(char *argv[]);
    int parse_cmd_line(int argc, char *argv[]);
    char **parse_path(char *string, int *path_count);
-   struct superblock get_super_block(FILE *fd);
+   void get_super_block(FILE *fd);
    void print_super_block(struct superblock sb);
-
+   void fill_inodes(FILE *fd);
+   void print_inode(struct inode * node);
+   void fill_bitmaps(FILE *fd);
 #endif

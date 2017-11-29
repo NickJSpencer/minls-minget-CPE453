@@ -11,7 +11,6 @@ int main(int argc, char *argv[])
 {
    int i;
    FILE *image_file_fd;
-   struct superblock sb;
    
    if (argc < 2)
    {
@@ -62,9 +61,16 @@ int main(int argc, char *argv[])
       exit(ERROR);
    } */
    
-   sb = get_super_block(image_file_fd);
-   
+   get_super_block(image_file_fd);
+
    print_super_block(sb);
+
+   fill_bitmaps(image_file_fd);
+
+   fill_inodes(image_file_fd);
+   print_inode(inodes[0]);
+   print_inode(inodes[1]);
+   print_inode(inodes[2]);
 
    return SUCCESS;
 }

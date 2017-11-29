@@ -156,10 +156,9 @@ char **parse_path(char *string, int *path_count)
    return path_ptr;
 }
 
-struct superblock get_super_block(FILE *fd)
+void get_super_block(FILE *fd)
 {
    char buffer[1024];
-   struct superblock sb;
 
    if (read(fd, buffer, 1024) == -1)
    {
@@ -178,8 +177,47 @@ struct superblock get_super_block(FILE *fd)
       perror("read");
       exit(ERROR);
    }
-      
-   return sb;
+}
+
+void fill_bitmaps(FILE *fd)
+{
+   inode_bitmap = (char *) malloc(sb.blocksize);
+   zone_bitmap = (char *) malloc(sb.blocksize);
+
+   if (read(fd, inode_bitmap, sb.blocksize) == -1)
+   {
+      perror("read");
+      exit(ERROR);
+   }
+   if (read(fd, zone_bitmap, sb.blocksize) == -1)
+   {
+      perror("read");
+      exit(ERROR);
+   }
+
+   printf("inode_bitmap: %02x\n", inode_bitmap);
+   printf("zone_bitmap: %02x\n\n", zone_bitmap);
+}
+
+void fill_inodes(FILE *fd)
+{
+   int i;
+   char buffer[sb.blocksize];
+   inodes = (struct inode **) malloc(sizeof(struct inode *) * sb.ninodes);
+   
+   //printf("size of inode: %d", sizeof(struct inode));
+
+   for (i = 0; i < sb.ninodes; i++)
+   {
+      inodes[i] = (struct inode *) malloc(sizeof(struct inode));
+      if (read(fd, inodes[i], sizeof(struct inode)) == -1)
+      {
+         perror("read");
+         exit(ERROR);
+      }
+   }
+
+   return 0;
 }
 
 void print_super_block(struct superblock sb)
@@ -196,4 +234,14 @@ void print_super_block(struct superblock sb)
    printf("  zones          %d\n", sb.zones);
    printf("  blocksize      %d\n", sb.blocksize);
    printf("  subversion     %d\n", sb.subversion);
+}
+
+void print_inode(struct inode * node)
+{
+   printf("File inode:\n");
+   printf("mode       0x%04x\n", node->mode);
+   printf("links      %d\n", node->links);
+   printf("uid        %d\n", node->uid);
+   printf("gid        %d\n", node->gid);
+   printf("size       %d\n", node->size);
 }
