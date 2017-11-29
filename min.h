@@ -11,6 +11,19 @@
    #define PARTITION_TABLE_LOCATION 446
    #define SECTOR_SIZE 512  
 
+   #define MASK_DIR  0040000
+   #define MASK_O_R  0000400
+   #define MASK_O_W  0000200
+   #define MASK_O_X  0000100
+   #define MASK_G_R  0000040
+   #define MASK_G_W  0000020
+   #define MASK_G_X  0000010
+   #define MASK_OT_R 0000400
+   #define MASK_OT_W 0000400
+   #define MASK_OT_X 0000400
+
+   #define GET_PERM(mode, mask, c) ( (((mode)&(mask)) == mask) ? c : '-' )
+
    /* Minix Version 3 Superblock
     * this structure found in fs/super.h
     * in minix 3.1.1
@@ -94,6 +107,7 @@
    void print_super_block(struct superblock sb);
    void print_usage(char *argv[]);
    void print_inode(struct inode * node);
-   void print_inode_zones(struct inode *node);
+   char *get_time(uint32_t);
+   char *get_mode(uint16_t);
 
 #endif

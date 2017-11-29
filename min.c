@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "min.h"
 
@@ -67,40 +68,33 @@ int parse_cmd_line(int argc, char *argv[])
     * The remaining args will be used for image_file, src_path, and dst_path */
    flags = count;
    count++;
-   if (v_flag)
-   {
-      printf("count in parse_cmd_line: %d flags: %d argc: %d\n", 
-         count, flags, argc);
-   }
    while (count < argc)
    {
       int arg = count - flags;
       if (arg == 1)
       {
          image_file = argv[count];
-         if (v_flag) {
-            printf("arg 1: %s\n", image_file);
-         }
       }
       else if (arg == 2)
       {
          s_path = argv[count];
          src_path = parse_path(s_path, &src_path_count);
-         if (v_flag) {
-            printf("arg 2: %s\n", s_path);
-         }
       }
       else if (arg == 3)
       {
          d_path = argv[count];
          dst_path = parse_path(d_path, &dst_path_count);
-         if (v_flag) {
-            printf("arg 3: %s\n", d_path);
-         }
       }
       count++;
    }
-   
+
+   /* If no src was provided, default to root */
+   if (src_path == NULL) {
+      src_path = (char **) malloc(sizeof(char *));
+      *src_path = "";
+      src_path_count = 1;
+   }
+
    return SUCCESS;
 }
 
@@ -293,26 +287,28 @@ void print_super_block(struct superblock sb)
    printf("  firstdata      %d\n", sb.firstdata);
    printf("  log_zone_size  %d (zone size: %d)\n",
          sb.log_zone_size, sb.blocksize);
-   printf("  max_file       %d\n", sb.max_file);
+   printf("  max_file       %lu\n", (long unsigned int) sb.max_file);
    printf("  magic          0x%04x\n", sb.magic);
    printf("  zones          %d\n", sb.zones);
    printf("  blocksize      %d\n", sb.blocksize);
-   printf("  subversion     %d\n", sb.subversion);
+   printf("  subversion     %d\n\n", sb.subversion);
 }
 
 void print_inode(struct inode * node)
 {
-   printf("File inode:\n");
-   printf("mode       0x%04x\n", node->mode);
-   printf("links      %d\n", node->links);
-   printf("uid        %d\n", node->uid);
-   printf("gid        %d\n", node->gid);
-   printf("size       %d\n", node->size);
-}
-
-void print_inode_zones(struct inode * node) {
    int i;
-   printf("Direct zones:\n");
+   printf("File inode:\n");
+   printf("  uint16_t mode       0x%04x (%s)\n", node->mode, get_mode(node->mode));
+   printf("  uint16_t links      %d\n", node->links);
+   printf("  uint16_t uid        %d\n", node->uid);
+   printf("  uint16_t gid        %d\n", node->gid);
+   printf("  uint16_t size       %d\n", node->size);
+   printf("  uint32_t atime      %d --- %s", node->atime, get_time(node->atime));
+   printf("  uint32_t mtime      %d --- %s", node->mtime, get_time(node->mtime));
+   printf("  uint32_t ctime      %d --- %s", node->ctime, get_time(node->ctime));
+
+
+   printf("\nDirect zones:\n");
    for (i = 0; i < DIRECT_ZONES; i++) {
       printf("%17s%d] = %5d\n", "zone[", i, node->zone[i]);
    }
@@ -320,4 +316,24 @@ void print_inode_zones(struct inode * node) {
    printf("uint32_t %9s %8d\n", "double", node->two_indirect);
 }
 
+char *get_time(uint32_t time) {
+   time_t t = time;
+   return ctime(&t);
+}
 
+char *get_mode(uint16_t mode) {
+   char* permissions = (char *) malloc(sizeof(char) * 11);
+   permissions[0] = GET_PERM(mode, MASK_DIR, 'd');
+   permissions[1] = GET_PERM(mode, MASK_O_R, 'r');
+   permissions[2] = GET_PERM(mode, MASK_O_W, 'w');
+   permissions[3] = GET_PERM(mode, MASK_O_X, 'x');
+   permissions[4] = GET_PERM(mode, MASK_G_R, 'r');
+   permissions[5] = GET_PERM(mode, MASK_G_W, 'w');
+   permissions[6] = GET_PERM(mode, MASK_G_X, 'x');
+   permissions[7] = GET_PERM(mode, MASK_OT_R, 'r');
+   permissions[8] = GET_PERM(mode, MASK_OT_W, 'w');
+   permissions[9] = GET_PERM(mode, MASK_OT_X, 'x');
+   permissions[10] = '\0';
+
+   return permissions;
+}
