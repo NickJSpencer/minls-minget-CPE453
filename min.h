@@ -81,10 +81,12 @@
    short s_flag;
    short h_flag;
    short v_flag;
-   
+      
    int prim_part;
    int sub_part;
    
+   uint32_t part_start;
+
    char *image_file;
    char **src_path;
    char **dst_path;
@@ -99,7 +101,7 @@
    char **parse_path(char *string, int *path_count);
 
    void get_partition(FILE *fd);
-   void validate_partition(FILE *fd, unsigned int part_start);
+   void validate_partition_table(FILE *fd);
 
    void get_super_block(FILE *fd);
    void validate_superblock();

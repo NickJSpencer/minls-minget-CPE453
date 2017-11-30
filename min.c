@@ -148,8 +148,13 @@ void get_partition(FILE *image)
       return;
    }
 
-   validate_partition(image, 0);
+   /* Default offset for primary partition */
+   part_start = 0;
+   
+   /* Ensure partition table is valid */
+   validate_partition_table(image);
 
+   /* Seek to the primary partition */
    if (fseek(image, PARTITION_TABLE_LOCATION + sizeof(struct partition) *
             prim_part, SEEK_SET) != 0)
    {
@@ -157,34 +162,49 @@ void get_partition(FILE *image)
       exit(ERROR);
    }
 
+   /* Load partition information from partition table */
    if (!fread(&part, sizeof(part), 1, image))
    {
       perror("fread");
       exit(ERROR);
    }
 
+   /* Update offset of partition start location */
+   part_start = part.lFirst * SECTOR_SIZE;
+
+   /* Subpartition stuff */
    if (!s_flag)
    {
       return;
    }
 
-   validate_partition(image, part.lFirst * SECTOR_SIZE);
+   /* Validate subpartition */
+   validate_partition_table(image);
 
+   /* Seek to desired subpartition entry in the subpartition table*/
    if (fseek(image, part.lFirst * SECTOR_SIZE + PARTITION_TABLE_LOCATION + 
             sizeof(struct partition) * sub_part, SEEK_SET) != 0)
    {
       perror("fseek");
       exit(ERROR);
    }
-
+   
+   /* Load subpartition information from subpartition table */
    if (!fread(&part, sizeof(struct partition), 1, image))
    {
       perror("fread");
       exit(ERROR);
    }
+
+   /* Update offset of partition to subpartition's start location */
+   part_start = part.lFirst * SECTOR_SIZE;
 }
 
-void validate_partition(FILE *image, unsigned int part_start)
+/* Validate a partition table based on an image and a partition offset
+ * When used for the primary partition, the offset prim_start is 0
+ * When used for a subpartition table, the offset prim_start is set to the 
+ * parent partition's start */
+void validate_partition_table(FILE *image)
 {
    char byte510;
    char byte511;
@@ -263,12 +283,12 @@ void get_bitmaps(FILE *image)
    
    /* Load i-node bitmap */
    if (!fread(inode_bitmap, sb.i_blocks * sb.blocksize, 1, image)) {
-      perror("1fread");
+      perror("fread");
       exit(ERROR);
    }
    /* Load zone bitmap */
    if (!fread(zone_bitmap, sb.z_blocks * sb.blocksize, 1, image)) {
-      perror("2fread");
+      perror("fread");
       exit(ERROR);
    }
 }
@@ -278,16 +298,21 @@ void get_inodes(FILE *image)
    /* Allocate memory for local inode list */
    inodes = (struct inode *) malloc(sizeof(struct inode) * sb.ninodes);
 
+   /* Seek to i-node block */
+   if (fseek(image, (part.lFirst * SECTOR_SIZE) + (2 + sb.i_blocks + 
+         sb.z_blocks) * sb.blocksize, SEEK_SET) != 0) {
+      perror("get_inodes() fseek");
+      exit(ERROR);
+   }
+
    /* Read in inodes into local inode list 
     * No need to fseek -- the file pointer is already pointing to
     * inode block at this point */
    if (!fread(inodes, sizeof(struct inode), sb.ninodes, image)) {
-      perror("fread");
+      perror("get_inodes() fread");
       exit(ERROR);
    }
 }
-
-
 
 /* Print the usage statement.
  * minls and minget have the same usage statement, 
