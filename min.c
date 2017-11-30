@@ -207,9 +207,11 @@ void validate_partition(FILE *image, unsigned int part_start)
       exit(ERROR);
    }
 
-   if (byte510 != 85 || byte511 != 170)
+   if (byte510 != (char) 85 || byte511 != (char) 170)
    {
       fprintf(stderr, "Error: Partition is not valid\n");
+      fprintf(stderr, "510: %d\n", byte510);
+      fprintf(stderr, "511: %d\n", byte511);
       exit(ERROR);
    }
 }
