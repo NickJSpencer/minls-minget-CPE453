@@ -7,10 +7,14 @@
    #define ERROR 1
    #define TRUE 1
    #define FALSE 0
+
    #define DIRECT_ZONES 7
+
    #define PARTITION_TABLE_LOCATION 446
    #define SECTOR_SIZE 512  
    #define MAGIC 19802
+   #define BOOTABLE 0x80
+   #define MINIX_TYPE 0x81
 
    #define MASK_DIR  0040000
    #define MASK_O_R  0000400
@@ -102,6 +106,7 @@
 
    void get_partition(FILE *fd);
    void validate_partition_table(FILE *fd);
+   void validate_partition();
 
    void get_super_block(FILE *fd);
    void validate_superblock();

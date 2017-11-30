@@ -6,140 +6,6 @@
 
 #include "min.h"
 
-/* Sets the flags, image_file, src_path, and dst_path 
- * based on the cmd line args. */
-int parse_cmd_line(int argc, char *argv[])
-{
-   int opt;
-   int count = 0;
-   int flags;
-   char *s_path;
-   char *d_path;
-
-   /* Set all the flags to false to start */
-   p_flag = FALSE;
-   s_flag = FALSE;
-   h_flag = FALSE;
-   v_flag = FALSE;
-   
-   /* Primary and sub partitions initialize to 0 and remain 0 if the
-    * following arg of '-p' or '-s' is invalid or does not exist */
-   prim_part = 0;
-   sub_part = 0;
-
-   image_file = NULL;
-   src_path = NULL;
-   dst_path = NULL;
-
-   src_path_count = 0;
-   dst_path_count = 0;
-   
-   /* Set all the specified flags from the cmd line.
-    * Also set prim_part and sub_part if '-p' or '-s' is set */
-   while ((opt = getopt(argc, argv, "p:s:hv")) != -1)
-   {
-      count++;
-      switch (opt) 
-      {
-         case 'p':
-            count++;
-            p_flag = TRUE;
-            prim_part = atoi(optarg);
-            break;
-         case 's':
-            count++;
-            s_flag = TRUE;
-            sub_part = atoi(optarg);
-            break;
-         case 'h':
-            h_flag = TRUE;
-            print_usage(argv);
-            exit(ERROR);
-         case 'v':
-            v_flag = TRUE;
-            break;
-         default:
-            print_usage(argv);
-            exit(ERROR);
-      }
-   }
-
-   /* getopt orders the remaining args at the back of argv. 
-    * The remaining args will be used for image_file, src_path, and dst_path */
-   flags = count;
-   count++;
-   while (count < argc)
-   {
-      int arg = count - flags;
-      if (arg == 1)
-      {
-         image_file = argv[count];
-      }
-      else if (arg == 2)
-      {
-         s_path = argv[count];
-         src_path = parse_path(s_path, &src_path_count);
-      }
-      else if (arg == 3)
-      {
-         d_path = argv[count];
-         dst_path = parse_path(d_path, &dst_path_count);
-      }
-      count++;
-   }
-
-   /* If no src was provided, default to root */
-   if (src_path == NULL) {
-      src_path = (char **) malloc(sizeof(char *));
-      *src_path = "";
-      src_path_count = 1;
-   }
-
-   return SUCCESS;
-}
-
-char **parse_path(char *string, int *path_count)
-{
-   int i;
-   char **path_ptr = (char **) malloc(sizeof(char *));
-   int count = 0;
-
-   path_ptr[0] = strtok(string, "/");
-   count++;
-   while (path_ptr[count - 1] != NULL)
-   {
-      if(v_flag)
-      {
-         printf("%d: %s\n", count - 1, path_ptr[count - 1]);
-      }
-      count++;
-      *path_count = *path_count + 1;
-      if ((path_ptr = (char**) realloc(path_ptr, sizeof(char *) * count)) 
-            == NULL)
-      {
-         perror("realloc");
-         exit(ERROR);
-      }
-      if ((path_ptr[count - 1] = (char *) malloc(sizeof(strlen(
-            path_ptr[count - 1])))) == NULL)
-      {
-         perror("malloc");
-         exit(ERROR);
-      }
-
-      path_ptr[count - 1] = strtok(NULL, "/");
-   }
-   if (v_flag) {
-      printf("count: %d\n", count);
-      for (i = 0; i < count; i++)
-      {
-         printf("/%s", path_ptr[i]);
-      }
-      printf("\n");
-   }
-
-   return path_ptr;
-}
 
 void get_partition(FILE *image)
 {
@@ -154,7 +20,7 @@ void get_partition(FILE *image)
    /* Ensure partition table is valid */
    validate_partition_table(image);
 
-   /* Seek to the primary partition */
+   /* Seek to the primary partition entry in partition table*/
    if (fseek(image, PARTITION_TABLE_LOCATION + sizeof(struct partition) *
             prim_part, SEEK_SET) != 0)
    {
@@ -169,19 +35,22 @@ void get_partition(FILE *image)
       exit(ERROR);
    }
 
-   /* Update offset of partition start location */
+   /* Update partition start location offset */
    part_start = part.lFirst * SECTOR_SIZE;
 
-   /* Subpartition stuff */
+   /* Validate partition */
+   validate_partition();
+
+   /* If no subpartition was provided we can return here */
    if (!s_flag)
    {
       return;
    }
 
-   /* Validate subpartition */
+   /* Validate subpartition table */
    validate_partition_table(image);
 
-   /* Seek to desired subpartition entry in the subpartition table*/
+   /* Seek to desired subpartition entry in the subpartition table */
    if (fseek(image, part.lFirst * SECTOR_SIZE + PARTITION_TABLE_LOCATION + 
             sizeof(struct partition) * sub_part, SEEK_SET) != 0)
    {
@@ -198,6 +67,20 @@ void get_partition(FILE *image)
 
    /* Update offset of partition to subpartition's start location */
    part_start = part.lFirst * SECTOR_SIZE;
+
+   /* Validate subpartition */
+   validate_partition();
+}
+
+void validate_partition() {
+   if (part.bootind != BOOTABLE) {
+      fprintf(stderr, "Partition at %d is not bootable\n", part_start);
+      exit(ERROR);
+   }
+   if (part.type != MINIX_TYPE) {
+      fprintf(stderr, "Partition at %d is not a minix partition\n", part_start);
+      exit(ERROR);
+   }
 }
 
 /* Validate a partition table based on an image and a partition offset
@@ -416,4 +299,139 @@ char *get_mode(uint16_t mode) {
    permissions[10] = '\0';
 
    return permissions;
+}
+
+/* Sets the flags, image_file, src_path, and dst_path 
+ * based on the cmd line args. */
+int parse_cmd_line(int argc, char *argv[])
+{
+   int opt;
+   int count = 0;
+   int flags;
+   char *s_path;
+   char *d_path;
+
+   /* Set all the flags to false to start */
+   p_flag = FALSE;
+   s_flag = FALSE;
+   h_flag = FALSE;
+   v_flag = FALSE;
+   
+   /* Primary and sub partitions initialize to 0 and remain 0 if the
+    * following arg of '-p' or '-s' is invalid or does not exist */
+   prim_part = 0;
+   sub_part = 0;
+
+   image_file = NULL;
+   src_path = NULL;
+   dst_path = NULL;
+
+   src_path_count = 0;
+   dst_path_count = 0;
+   
+   /* Set all the specified flags from the cmd line.
+    * Also set prim_part and sub_part if '-p' or '-s' is set */
+   while ((opt = getopt(argc, argv, "p:s:hv")) != -1)
+   {
+      count++;
+      switch (opt) 
+      {
+         case 'p':
+            count++;
+            p_flag = TRUE;
+            prim_part = atoi(optarg);
+            break;
+         case 's':
+            count++;
+            s_flag = TRUE;
+            sub_part = atoi(optarg);
+            break;
+         case 'h':
+            h_flag = TRUE;
+            print_usage(argv);
+            exit(ERROR);
+         case 'v':
+            v_flag = TRUE;
+            break;
+         default:
+            print_usage(argv);
+            exit(ERROR);
+      }
+   }
+
+   /* getopt orders the remaining args at the back of argv. 
+    * The remaining args will be used for image_file, src_path, and dst_path */
+   flags = count;
+   count++;
+   while (count < argc)
+   {
+      int arg = count - flags;
+      if (arg == 1)
+      {
+         image_file = argv[count];
+      }
+      else if (arg == 2)
+      {
+         s_path = argv[count];
+         src_path = parse_path(s_path, &src_path_count);
+      }
+      else if (arg == 3)
+      {
+         d_path = argv[count];
+         dst_path = parse_path(d_path, &dst_path_count);
+      }
+      count++;
+   }
+
+   /* If no src was provided, default to root */
+   if (src_path == NULL) {
+      src_path = (char **) malloc(sizeof(char *));
+      *src_path = "";
+      src_path_count = 1;
+   }
+
+   return SUCCESS;
+}
+
+char **parse_path(char *string, int *path_count)
+{
+   int i;
+   char **path_ptr = (char **) malloc(sizeof(char *));
+   int count = 0;
+
+   path_ptr[0] = strtok(string, "/");
+   count++;
+   while (path_ptr[count - 1] != NULL)
+   {
+      if(v_flag)
+      {
+         printf("%d: %s\n", count - 1, path_ptr[count - 1]);
+      }
+      count++;
+      *path_count = *path_count + 1;
+      if ((path_ptr = (char**) realloc(path_ptr, sizeof(char *) * count)) 
+            == NULL)
+      {
+         perror("realloc");
+         exit(ERROR);
+      }
+      if ((path_ptr[count - 1] = (char *) malloc(sizeof(strlen(
+            path_ptr[count - 1])))) == NULL)
+      {
+         perror("malloc");
+         exit(ERROR);
+      }
+
+      path_ptr[count - 1] = strtok(NULL, "/");
+   }
+   if (v_flag) {
+      printf("count: %d\n", count);
+      for (i = 0; i < count; i++)
+      {
+         printf("/%s", path_ptr[i]);
+      }
+      printf("\n");
+   }
+
+   return path_ptr;
 }
