@@ -7,9 +7,21 @@
 
 #include "min.h"
 
+void print_path() {
+   if (src_path_count == 0) {
+      printf("/");
+      return;
+   }
+   int i;
+   for (i = 0; i < src_path_count; i++) {
+      printf("/%s", src_path[i]);
+   }
+}
+
 int main(int argc, char *argv[])
 {
    FILE *image_file_fd;
+   int i;
    
    if (argc < 2)
    {
@@ -21,7 +33,7 @@ int main(int argc, char *argv[])
 
    if ((image_file_fd = fopen(image_file, "r")) == NULL)
    {
-      perror("1open");
+      perror("open");
       exit(ERROR);
    }
 
@@ -35,9 +47,6 @@ int main(int argc, char *argv[])
 
    /* Load and print super block */
    get_super_block(image_file_fd);
-   if (v_flag) { 
-      print_super_block(sb);
-   }
 
    /* Fill i-node and zone bitmaps */
    get_bitmaps(image_file_fd);
@@ -49,7 +58,23 @@ int main(int argc, char *argv[])
       print_inode(&inodes[0]);
    }
 
-   get_directory(image_file_fd, &inodes[0], 0);
+   struct inode *node = get_directory_inode(image_file_fd, &inodes[0], 0);
+
+   /* Dir */
+   if ((node->mode & MASK_DIR) == MASK_DIR) {
+      print_path();
+      printf(":\n");
+      struct directory *dir = get_inodes_in_dir(image_file_fd, node);
+      for (i = 0; i < node->size / 64; i++) {
+         print_file(&inodes[dir[i].inode - 1], (char *)dir[i].name);
+         printf("\n");
+      }
+   }
+   /* File */
+   else {
+      print_file(node, "");
+      print_path();
+  }
 
    return SUCCESS;
 }

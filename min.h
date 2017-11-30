@@ -10,11 +10,15 @@
 
    #define DIRECT_ZONES 7
 
-   #define PARTITION_TABLE_LOCATION 446
+   #define PARTITION_TABLE_LOCATION 0x1BE
    #define SECTOR_SIZE 512  
    #define MAGIC 19802
    #define BOOTABLE 0x80
    #define MINIX_TYPE 0x81
+   #define VALID_510 0x55
+   #define VALID_511 0xAA
+
+   #define REGULAR_FILE 0100000
 
    #define MASK_DIR  0040000
    #define MASK_O_R  0000400
@@ -23,10 +27,10 @@
    #define MASK_G_R  0000040
    #define MASK_G_W  0000020
    #define MASK_G_X  0000010
-   #define MASK_OT_R 0000400
-   #define MASK_OT_W 0000400
-   #define MASK_OT_X 0000400
-
+   #define MASK_OT_R 0000004
+   #define MASK_OT_W 0000002
+   #define MASK_OT_X 0000001
+ 
    #define GET_PERM(mode, mask, c) ( (((mode)&(mask)) == mask) ? c : '-' )
 
    /* Minix Version 3 Superblock
@@ -119,12 +123,14 @@
    void get_inodes(FILE *fd);
    void get_bitmaps(FILE *fd);
 
-   void get_directory(FILE *fd, struct inode *node, int);
+   struct inode *get_directory_inode(FILE *fd, struct inode *node, int);
+   struct directory *get_inodes_in_dir(FILE *fd, struct inode *node);
 
    void print_partition(struct partition part);
    void print_super_block(struct superblock sb);
    void print_usage(char *argv[]);
    void print_inode(struct inode * node);
+   void print_file(struct inode *node, char *name);
    char *get_time(uint32_t);
    char *get_mode(uint16_t);
 

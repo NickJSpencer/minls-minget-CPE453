@@ -8,13 +8,13 @@
 
 void get_partition(FILE *image)
 {
+   /* Default offset for primary partition */
+   part_start = 0;
+
    if(!p_flag)
    {
       return;
    }
-
-   /* Default offset for primary partition */
-   part_start = 0;
    
    /* Ensure partition table is valid */
    validate_partition_table(image);
@@ -30,7 +30,7 @@ void get_partition(FILE *image)
    /* Load partition information from partition table */
    if (!fread(&part, sizeof(part), 1, image))
    {
-      perror("fread");
+      perror("1fread");
       exit(ERROR);
    }
 
@@ -39,8 +39,6 @@ void get_partition(FILE *image)
 
    /* Validate partition */
    validate_partition();
-
-   print_partition(part);
 
    /* If no subpartition was provided we can return here */
    if (!s_flag)
@@ -52,7 +50,7 @@ void get_partition(FILE *image)
    validate_partition_table(image);
 
    /* Seek to desired subpartition entry in the subpartition table */
-   if (fseek(image, part.lFirst * SECTOR_SIZE + PARTITION_TABLE_LOCATION + 
+   if (fseek(image, part_start + PARTITION_TABLE_LOCATION + 
             sizeof(struct partition) * sub_part, SEEK_SET) != 0)
    {
       perror("fseek");
@@ -62,26 +60,23 @@ void get_partition(FILE *image)
    /* Load subpartition information from subpartition table */
    if (!fread(&part, sizeof(struct partition), 1, image))
    {
-      perror("fread");
+      perror("2fread");
       exit(ERROR);
    }
 
    /* Update offset of partition to subpartition's start location */
    part_start = part.lFirst * SECTOR_SIZE;
 
-   print_partition(part);
-
    /* Validate subpartition */
-   //validate_partition();
+   validate_partition();
 }
 
-void validate_partition() {
-   if (part.bootind != BOOTABLE) {
-      fprintf(stderr, "Partition at %d is not bootable\n", part_start);
-      exit(ERROR);
-   }
+void validate_partition() 
+{
    if (part.type != MINIX_TYPE) {
-      fprintf(stderr, "Partition at %d is not a minix partition\n", part_start);
+      print_partition(part);
+      fprintf(stderr, "Partition at %d is not a minix partition\n", 
+         part_start);
       exit(ERROR);
    }
 }
@@ -92,30 +87,36 @@ void validate_partition() {
  * parent partition's start */
 void validate_partition_table(FILE *image)
 {
-   char byte510;
-   char byte511;
+   uint8_t byte510;
+   uint8_t byte511;
 
+   /* Read the data at byte 510 in partition table */
    if (fseek(image, 510 + part_start, SEEK_SET) != 0)
    {
       perror("fseek");
       exit(ERROR);
    }
-
-   if (!fread(&byte510, 1, 1, image))
+   if (!fread(&byte510, sizeof(uint8_t), 1, image))
    {
-      perror("fread");
+      perror("3fread");
       exit(ERROR);
    }
-
-   if (!fread(&byte511, 1, 1, image))
-   {
-      perror("fread");
+   /* Validate data at byte 510 */
+   if (byte510 != VALID_510) {
+      fprintf(stderr, "Byte 510 in partition table is not valid: %d\n", 
+         byte510);
       exit(ERROR);
    }
-
-   if (byte510 != (char) 85 || byte511 != (char) 170)
+   
+   /* Read the data at byte 511 in partition table */
+   if (!fread(&byte511, sizeof(uint8_t), 1, image))
    {
-      fprintf(stderr, "Error: Partition is not valid\n");
+      perror("4fread");
+      exit(ERROR);
+   }
+   /* Validate data at byte 511 */
+   if (byte511 != VALID_511) {
+      fprintf(stderr, "Byte 511 in partition table is not valid\n");
       exit(ERROR);
    }
 }
@@ -123,7 +124,6 @@ void validate_partition_table(FILE *image)
 void get_super_block(FILE *image)
 {
    int seek_val = 1024;
-
    if (p_flag)
    {
       seek_val += part.lFirst * SECTOR_SIZE;
@@ -138,11 +138,15 @@ void get_super_block(FILE *image)
    /* Load super block */
    if (!fread(&sb, sizeof(sb), 1, image))
    {
-      perror("fread");
+      perror("5fread");
       exit(ERROR);
    }
 
+   if (v_flag) {
+      print_super_block(sb);
+   }
    validate_superblock();
+
 }
 
 void validate_superblock()
@@ -167,12 +171,12 @@ void get_bitmaps(FILE *image)
    
    /* Load i-node bitmap */
    if (!fread(inode_bitmap, sb.i_blocks * sb.blocksize, 1, image)) {
-      perror("fread");
+      perror("6fread");
       exit(ERROR);
    }
    /* Load zone bitmap */
    if (!fread(zone_bitmap, sb.z_blocks * sb.blocksize, 1, image)) {
-      perror("fread");
+      perror("7fread");
       exit(ERROR);
    }
 }
@@ -198,11 +202,13 @@ void get_inodes(FILE *image)
    }
 }
 
-void get_directory(FILE *image, struct inode *node, int arg)
-{
+struct directory *get_inodes_in_dir(FILE *image, struct inode *node) {
+   /* Allocate enough directory objects for all directories in
+    * this inode's data zone */
    struct directory *dir = (struct directory *) malloc(sizeof(struct directory)
          * node->size / 64);
-   int i;
+         
+   /* Seek to location of the data zone specified by inode */
    if (fseek(image, part_start + node->zone[0] * sb.blocksize, SEEK_SET) != 0)
    {
       perror("fseek");
@@ -211,32 +217,38 @@ void get_directory(FILE *image, struct inode *node, int arg)
 
    if (!fread(dir, sizeof(struct directory), node->size / 64, image))
    {
-      perror("fread");
+      perror("8fread");
       exit(ERROR);
    }
+   return dir;
+}
 
-   printf("\n");
+struct inode* get_directory_inode(FILE *image, struct inode *node, int arg)
+{
+   int i;
+ 
+   if ((node->mode & REGULAR_FILE) == REGULAR_FILE) {
+      return node;
+   }
+
+   struct directory *dir = get_inodes_in_dir(image, node);
 
    for (i = 0; i < node->size / 64; i++)
    {
-      printf("\nDIRECTORY:\n");
-      printf("inode: %d\n", dir[i].inode);
-      printf("name: %s\n", dir[i].name);
-
-      if (arg < src_path_count)
-      {   
-         if (!strcmp(src_path[arg], dir[i].name))
+      if (arg < src_path_count && !strcmp(src_path[arg], (char *) dir[i].name)) 
+      {
+         if (arg >= src_path_count)
          {
-            if (arg >= src_path_count)
-            {
-               return;
-            }
-            arg++;
-            get_directory(image, &inodes[dir[i].inode - 1], arg);
-            return;
+            return node;
          }
+         arg++;
+         struct inode *ret = get_directory_inode(image, 
+            &inodes[dir[i].inode - 1], arg);
+         return ret;
       }
    }
+
+   return node;
 }
 
 /* Print the usage statement.
@@ -265,68 +277,74 @@ void print_usage(char *argv[])
 
 void print_partition(struct partition part)
 {
-   printf("Partition Contents:\n");
-   printf("bootind      0x%x\n", part.bootind);
-   printf("start_head   %d\n", part.start_head);
-   printf("start_sec    %d\n", part.start_sec);
-   printf("start_cyl    %d\n", part.start_cyl);
-   printf("type         0x%x\n", part.type);
-   printf("end_head     %d\n", part.end_head);
-   printf("end_sec      %d\n", part.end_sec);
-   printf("end_cyl      %d\n", part.end_cyl);
-   printf("lFirst       %lu\n", part.lFirst);
-   printf("size         %d\n", part.size);
+   fprintf(stderr, "Partition Contents:\n");
+   fprintf(stderr, "bootind      0x%x\n", part.bootind);
+   fprintf(stderr, "start_head   %d\n", part.start_head);
+   fprintf(stderr, "start_sec    %d\n", part.start_sec);
+   fprintf(stderr, "start_cyl    %d\n", part.start_cyl);
+   fprintf(stderr, "type         0x%x\n", part.type);
+   fprintf(stderr, "end_head     %d\n", part.end_head);
+   fprintf(stderr, "end_sec      %d\n", part.end_sec);
+   fprintf(stderr, "end_cyl      %d\n", part.end_cyl);
+   fprintf(stderr, "lFirst       %lu\n", part.lFirst);
+   fprintf(stderr, "size         %d\n", part.size);
 }
 
 void print_super_block(struct superblock sb)
 {
-   printf("Superblock Contents:\n");
-   printf("Stored Fields:\n");
-   printf("  ninodes        %d\n", sb.ninodes);
-   printf("  i_blocks       %d\n", sb.i_blocks);
-   printf("  z_blocks       %d\n", sb.z_blocks);
-   printf("  firstdata      %d\n", sb.firstdata);
-   printf("  log_zone_size  %d (zone size: %d)\n",
+   fprintf(stderr, "Superblock Contents:\n");
+   fprintf(stderr, "Stored Fields:\n");
+   fprintf(stderr, "  ninodes        %d\n", sb.ninodes);
+   fprintf(stderr, "  i_blocks       %d\n", sb.i_blocks);
+   fprintf(stderr, "  z_blocks       %d\n", sb.z_blocks);
+   fprintf(stderr, "  firstdata      %d\n", sb.firstdata);
+   fprintf(stderr, "  log_zone_size  %d (zone size: %d)\n",
          sb.log_zone_size, sb.blocksize);
-   printf("  max_file       %lu\n", (long unsigned int) sb.max_file);
-   printf("  magic          0x%04x\n", sb.magic);
-   printf("  zones          %d\n", sb.zones);
-   printf("  blocksize      %d\n", sb.blocksize);
-   printf("  subversion     %d\n\n", sb.subversion);
+   fprintf(stderr, "  max_file       %lu\n", (long unsigned int) sb.max_file);
+   fprintf(stderr, "  magic          0x%04x\n", sb.magic);
+   fprintf(stderr, "  zones          %d\n", sb.zones);
+   fprintf(stderr, "  blocksize      %d\n", sb.blocksize);
+   fprintf(stderr, "  subversion     %d\n\n", sb.subversion);
 }
 
 void print_inode(struct inode * node)
 {
    int i;
-   printf("File inode:\n");
-   printf("  uint16_t mode       0x%04x (%s)\n", node->mode, get_mode(
-            node->mode));
-   printf("  uint16_t links      %d\n", node->links);
-   printf("  uint16_t uid        %d\n", node->uid);
-   printf("  uint16_t gid        %d\n", node->gid);
-   printf("  uint16_t size       %d\n", node->size);
-   printf("  uint32_t atime      %d --- %s", node->atime, get_time(
-            node->atime));
-   printf("  uint32_t mtime      %d --- %s", node->mtime, get_time(
-            node->mtime));
-   printf("  uint32_t ctime      %d --- %s", node->ctime, get_time(
+   fprintf(stderr, "File inode:\n");
+   fprintf(stderr, "  uint16_t mode       0x%04x (%s)\n", node->mode, get_mode(
+          node->mode));
+   fprintf(stderr, "  uint16_t links      %d\n", node->links);
+   fprintf(stderr, "  uint16_t uid        %d\n", node->uid);
+   fprintf(stderr, "  uint16_t gid        %d\n", node->gid);
+   fprintf(stderr, "  uint16_t size       %d\n", node->size);
+   fprintf(stderr, "  uint32_t atime      %d --- %s", node->atime, get_time(
+          node->atime));
+   fprintf(stderr, "  uint32_t mtime      %d --- %s", node->mtime, get_time(
+          node->mtime));
+   fprintf(stderr, "  uint32_t ctime      %d --- %s", node->ctime, get_time(
             node->ctime));
 
 
-   printf("\nDirect zones:\n");
+   fprintf(stderr, "\nDirect zones:\n");
    for (i = 0; i < DIRECT_ZONES; i++) {
-      printf("%17s%d] = %5d\n", "zone[", i, node->zone[i]);
+      fprintf(stderr, "%17s%d] = %5d\n", "zone[", i, node->zone[i]);
    }
-   printf("uint32_t %11s %6d\n", "indirect", node->indirect);
-   printf("uint32_t %9s %8d\n", "double", node->two_indirect);
+   fprintf(stderr, "uint32_t %11s %6d\n", "indirect", node->indirect);
+   fprintf(stderr, "uint32_t %9s %8d\n", "double", node->two_indirect);
 }
 
-char *get_time(uint32_t time) {
+void print_file(struct inode *node, char *name) {
+   printf("%s%8d %s", get_mode(node->mode), node->size, name);
+}
+
+char *get_time(uint32_t time) 
+{
    time_t t = time;
    return ctime(&t);
 }
 
-char *get_mode(uint16_t mode) {
+char *get_mode(uint16_t mode) 
+{
    char* permissions = (char *) malloc(sizeof(char) * 11);
    permissions[0] = GET_PERM(mode, MASK_DIR, 'd');
    permissions[1] = GET_PERM(mode, MASK_O_R, 'r');
@@ -338,6 +356,7 @@ char *get_mode(uint16_t mode) {
    permissions[7] = GET_PERM(mode, MASK_OT_R, 'r');
    permissions[8] = GET_PERM(mode, MASK_OT_W, 'w');
    permissions[9] = GET_PERM(mode, MASK_OT_X, 'x');
+
    permissions[10] = '\0';
 
    return permissions;
@@ -347,11 +366,14 @@ char *get_mode(uint16_t mode) {
  * based on the cmd line args. */
 int parse_cmd_line(int argc, char *argv[])
 {
+   int isNumber;
    int opt;
-   int count = 0;
-   int flags;
+   int flagCount;
+   int imageLoc;
    char *s_path;
    char *d_path;
+   char temp[256];
+   int tempidx;
 
    /* Set all the flags to false to start */
    p_flag = FALSE;
@@ -373,20 +395,20 @@ int parse_cmd_line(int argc, char *argv[])
    
    /* Set all the specified flags from the cmd line.
     * Also set prim_part and sub_part if '-p' or '-s' is set */
-   while ((opt = getopt(argc, argv, "p:s:hv")) != -1)
+   flagCount = 0;
+   while ((opt = getopt(argc, argv, "vp:s:h")) != -1)
    {
-      count++;
       switch (opt) 
       {
          case 'p':
-            count++;
             p_flag = TRUE;
             prim_part = atoi(optarg);
+            flagCount++;
             break;
          case 's':
-            count++;
             s_flag = TRUE;
             sub_part = atoi(optarg);
+            flagCount++;
             break;
          case 'h':
             h_flag = TRUE;
@@ -394,6 +416,7 @@ int parse_cmd_line(int argc, char *argv[])
             exit(ERROR);
          case 'v':
             v_flag = TRUE;
+            flagCount++;
             break;
          default:
             print_usage(argv);
@@ -401,28 +424,39 @@ int parse_cmd_line(int argc, char *argv[])
       }
    }
 
-   /* getopt orders the remaining args at the back of argv. 
-    * The remaining args will be used for image_file, src_path, and dst_path */
-   flags = count;
-   count++;
-   while (count < argc)
-   {
-      int arg = count - flags;
-      if (arg == 1)
-      {
-         image_file = argv[count];
+   /* Walk back through the arguments to find where the image path is */
+   imageLoc = 1;
+   while(flagCount) {
+      if (argv[imageLoc][0] == '-') {
+         flagCount--;
       }
-      else if (arg == 2)
-      {
-         s_path = argv[count];
-         src_path = parse_path(s_path, &src_path_count);
+      imageLoc++;
+   }
+
+   /* Check if current argument is a number */
+   strcpy(temp, argv[imageLoc]);
+   tempidx = 0;
+   isNumber = 1;
+   while(temp[tempidx]) {
+      if(temp[tempidx] < '0' || temp[tempidx] > '9') {
+         isNumber = 0;
+         break;
       }
-      else if (arg == 3)
-      {
-         d_path = argv[count];
-         dst_path = parse_path(d_path, &dst_path_count);
-      }
-      count++;
+      tempidx++;
+   }
+   if (isNumber) {
+      imageLoc++;
+   }
+
+   image_file = argv[imageLoc++];
+
+   if (imageLoc < argc) {
+      s_path = argv[imageLoc++];
+      src_path = parse_path(s_path, &src_path_count);
+   }
+   if (imageLoc < argc) {
+      d_path = argv[imageLoc++];
+      dst_path = parse_path(d_path, &dst_path_count);
    }
 
    /* If no src was provided, default to root */
@@ -437,7 +471,6 @@ int parse_cmd_line(int argc, char *argv[])
 
 char **parse_path(char *string, int *path_count)
 {
-   int i;
    char **path_ptr = (char **) malloc(sizeof(char *));
    int count = 0;
 
@@ -445,10 +478,6 @@ char **parse_path(char *string, int *path_count)
    count++;
    while (path_ptr[count - 1] != NULL)
    {
-      if(v_flag)
-      {
-         printf("%d: %s\n", count - 1, path_ptr[count - 1]);
-      }
       count++;
       *path_count = *path_count + 1;
       if ((path_ptr = (char**) realloc(path_ptr, sizeof(char *) * count)) 
@@ -465,14 +494,6 @@ char **parse_path(char *string, int *path_count)
       }
 
       path_ptr[count - 1] = strtok(NULL, "/");
-   }
-   if (v_flag) {
-      printf("count: %d\n", count);
-      for (i = 0; i < count; i++)
-      {
-         printf("/%s", path_ptr[i]);
-      }
-      printf("\n");
    }
 
    return path_ptr;
