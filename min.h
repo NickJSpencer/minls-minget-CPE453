@@ -10,6 +10,7 @@
    #define DIRECT_ZONES 7
    #define PARTITION_TABLE_LOCATION 446
    #define SECTOR_SIZE 512  
+   #define MAGIC 19802
 
    #define MASK_DIR  0040000
    #define MASK_O_R  0000400
@@ -98,8 +99,11 @@
    char **parse_path(char *string, int *path_count);
 
    void get_partition(FILE *fd);
-   void print_partition(struct partition part);
+   void validate_partition(FILE *fd, unsigned int part_start);
+
    void get_super_block(FILE *fd);
+   void validate_superblock();
+   
    void get_inodes(FILE *fd);
    void get_bitmaps(FILE *fd);
 

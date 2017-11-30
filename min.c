@@ -148,6 +148,8 @@ void get_partition(FILE *image)
       return;
    }
 
+   validate_partition(image, 0);
+
    if (fseek(image, PARTITION_TABLE_LOCATION + sizeof(struct partition) *
             prim_part, SEEK_SET) != 0)
    {
@@ -166,6 +168,8 @@ void get_partition(FILE *image)
       return;
    }
 
+   validate_partition(image, part.lFirst * SECTOR_SIZE);
+
    if (fseek(image, part.lFirst * SECTOR_SIZE + PARTITION_TABLE_LOCATION + 
             sizeof(struct partition) * sub_part, SEEK_SET) != 0)
    {
@@ -176,6 +180,36 @@ void get_partition(FILE *image)
    if (!fread(&part, sizeof(struct partition), 1, image))
    {
       perror("fread");
+      exit(ERROR);
+   }
+}
+
+void validate_partition(FILE *image, unsigned int part_start)
+{
+   char byte510;
+   char byte511;
+
+   if (fseek(image, 510 + part_start, SEEK_SET) != 0)
+   {
+      perror("fseek");
+      exit(ERROR);
+   }
+
+   if (!fread(&byte510, 1, 1, image))
+   {
+      perror("fread");
+      exit(ERROR);
+   }
+
+   if (!fread(&byte511, 1, 1, image))
+   {
+      perror("fread");
+      exit(ERROR);
+   }
+
+   if (byte510 != 85 || byte511 != 170)
+   {
+      fprintf(stderr, "Error: Partition is not valid\n");
       exit(ERROR);
    }
 }
@@ -199,6 +233,17 @@ void get_super_block(FILE *image)
    if (!fread(&sb, sizeof(sb), 1, image))
    {
       perror("fread");
+      exit(ERROR);
+   }
+
+   validate_superblock();
+}
+
+void validate_superblock()
+{
+   if (sb.magic != MAGIC)
+   {
+      fprintf(stderr, "Error: filesystem is not a minix filesystem\n");
       exit(ERROR);
    }
 }
@@ -240,6 +285,8 @@ void get_inodes(FILE *image)
    }
 }
 
+
+
 /* Print the usage statement.
  * minls and minget have the same usage statement, 
  * except for the first line. */
@@ -247,19 +294,21 @@ void print_usage(char *argv[])
 {
    if (!strcmp(argv[0], "./minls"))
    {
-      printf("usage: minls [ -v ] [ -p num [ -s num ] ] imagefile [path]\n");
+      fprintf(stderr, "usage: minls [ -v ] [ -p num [ -s num ] ] imagefile");
+      fprintf(stderr, "[path]\n");
    }
    else if (!strcmp(argv[0], "./minget"))
    {
-      printf("usage: minget [ -v ] [ -p part [ -s subpart ] ] imagefile ");
-      printf("srcpath [ dstpath ]");
+      fprintf(stderr, "usage: minget [ -v ] [ -p part [ -s subpart ] ]");
+      fprintf(stderr, " imagefile srcpath [ dstpath ]");
    }
-   printf("Options:\n");
-   printf("-p part    --- select partition for filesystem (default: none)\n");
-   printf("-s sub     --- select subpartition for filesystem (default: none)");
-   printf("\n");
-   printf("-h help    --- print usage information and exit\n");
-   printf("-v verbose --- increase verbosity level\n");
+   fprintf(stderr, "Options:\n");
+   fprintf(stderr, "-p part    --- select partition for filesystem ");
+   fprintf(stderr, "(default: none)\n");
+   fprintf(stderr, "-s sub     --- select subpartition for filesystem ");
+   fprintf(stderr, "(default: none)\n");
+   fprintf(stderr, "-h help    --- print usage information and exit\n");
+   fprintf(stderr, "-v verbose --- increase verbosity level\n");
 }
 
 void print_partition(struct partition part)
@@ -298,14 +347,18 @@ void print_inode(struct inode * node)
 {
    int i;
    printf("File inode:\n");
-   printf("  uint16_t mode       0x%04x (%s)\n", node->mode, get_mode(node->mode));
+   printf("  uint16_t mode       0x%04x (%s)\n", node->mode, get_mode(
+            node->mode));
    printf("  uint16_t links      %d\n", node->links);
    printf("  uint16_t uid        %d\n", node->uid);
    printf("  uint16_t gid        %d\n", node->gid);
    printf("  uint16_t size       %d\n", node->size);
-   printf("  uint32_t atime      %d --- %s", node->atime, get_time(node->atime));
-   printf("  uint32_t mtime      %d --- %s", node->mtime, get_time(node->mtime));
-   printf("  uint32_t ctime      %d --- %s", node->ctime, get_time(node->ctime));
+   printf("  uint32_t atime      %d --- %s", node->atime, get_time(
+            node->atime));
+   printf("  uint32_t mtime      %d --- %s", node->mtime, get_time(
+            node->mtime));
+   printf("  uint32_t ctime      %d --- %s", node->ctime, get_time(
+            node->ctime));
 
 
    printf("\nDirect zones:\n");

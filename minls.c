@@ -27,6 +27,11 @@ int main(int argc, char *argv[])
    
    /* Load partition table */
    get_partition(image_file_fd);
+   if (v_flag)
+   {
+      printf("Partition %d:\n", prim_part);
+      print_partition(part);
+   }
 
    /* Load and print super block */
    get_super_block(image_file_fd);
