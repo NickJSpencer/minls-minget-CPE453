@@ -9,7 +9,6 @@
    #define FALSE 0
 
    #define DIRECT_ZONES 7
-<<<<<<< Updated upstream
 
    #define PARTITION_TABLE_LOCATION 446
    #define SECTOR_SIZE 512  
@@ -35,15 +34,6 @@
     * in minix 3.1.1
     * on disk. These fields and orientation are non–negotiable */
    struct __attribute__ ((__packed__)) superblock { 
-=======
-   #define SECTOR_SIZE 512  
-
-   struct __attribute__ ((__packed__)) superblock { /* Minix Version 3 Superbloc
-                        * this structure found in fs/super.h
-                        * in minix 3.1.1
-                        */
-      /* on disk. These fields and orientation are non–negotiable */
->>>>>>> Stashed changes
       uint32_t ninodes;         /* number of inodes in this filesystem */
       uint16_t pad1;            /* make things line up properly */
       int16_t i_blocks;         /* # of blocks used by inode bit map */
@@ -87,6 +77,11 @@
       uint32_t size;
    };
 
+   struct __attribute__ ((__packed__)) directory {
+      uint32_t inode;
+      unsigned char name[60];
+   };
+
    struct superblock sb;
    struct inode *inodes;   
    struct partition part;
@@ -123,6 +118,8 @@
    
    void get_inodes(FILE *fd);
    void get_bitmaps(FILE *fd);
+
+   void get_directory(FILE *fd, struct inode *node, int);
 
    void print_partition(struct partition part);
    void print_super_block(struct superblock sb);

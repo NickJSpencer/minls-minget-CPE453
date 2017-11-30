@@ -40,6 +40,8 @@ void get_partition(FILE *image)
    /* Validate partition */
    validate_partition();
 
+   print_partition(part);
+
    /* If no subpartition was provided we can return here */
    if (!s_flag)
    {
@@ -67,8 +69,10 @@ void get_partition(FILE *image)
    /* Update offset of partition to subpartition's start location */
    part_start = part.lFirst * SECTOR_SIZE;
 
+   print_partition(part);
+
    /* Validate subpartition */
-   validate_partition();
+   //validate_partition();
 }
 
 void validate_partition() {
@@ -112,8 +116,6 @@ void validate_partition_table(FILE *image)
    if (byte510 != (char) 85 || byte511 != (char) 170)
    {
       fprintf(stderr, "Error: Partition is not valid\n");
-      fprintf(stderr, "510: %d\n", byte510);
-      fprintf(stderr, "511: %d\n", byte511);
       exit(ERROR);
    }
 }
@@ -193,6 +195,47 @@ void get_inodes(FILE *image)
    if (!fread(inodes, sizeof(struct inode), sb.ninodes, image)) {
       perror("get_inodes() fread");
       exit(ERROR);
+   }
+}
+
+void get_directory(FILE *image, struct inode *node, int arg)
+{
+   struct directory *dir = (struct directory *) malloc(sizeof(struct directory)
+         * node->size / 64);
+   int i;
+   if (fseek(image, part_start + node->zone[0] * sb.blocksize, SEEK_SET) != 0)
+   {
+      perror("fseek");
+      exit(ERROR);
+   }
+
+   if (!fread(dir, sizeof(struct directory), node->size / 64, image))
+   {
+      perror("fread");
+      exit(ERROR);
+   }
+
+   printf("\n");
+
+   for (i = 0; i < node->size / 64; i++)
+   {
+      printf("\nDIRECTORY:\n");
+      printf("inode: %d\n", dir[i].inode);
+      printf("name: %s\n", dir[i].name);
+
+      if (arg < src_path_count)
+      {   
+         if (!strcmp(src_path[arg], dir[i].name))
+         {
+            if (arg >= src_path_count)
+            {
+               return;
+            }
+            arg++;
+            get_directory(image, &inodes[dir[i].inode - 1], arg);
+            return;
+         }
+      }
    }
 }
 
@@ -386,7 +429,7 @@ int parse_cmd_line(int argc, char *argv[])
    if (src_path == NULL) {
       src_path = (char **) malloc(sizeof(char *));
       *src_path = "";
-      src_path_count = 1;
+      src_path_count = 0;
    }
 
    return SUCCESS;

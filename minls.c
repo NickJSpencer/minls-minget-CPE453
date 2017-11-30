@@ -49,6 +49,8 @@ int main(int argc, char *argv[])
       print_inode(&inodes[0]);
    }
 
+   get_directory(image_file_fd, &inodes[0], 0);
+
    return SUCCESS;
 }
 
