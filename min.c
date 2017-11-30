@@ -6,7 +6,6 @@
 
 #include "min.h"
 
-
 void get_partition(FILE *image)
 {
    if(!p_flag)

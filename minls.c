@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
       perror("1open");
       exit(ERROR);
    }
-   
+
    /* Load partition table */
    get_partition(image_file_fd);
    if (v_flag)
