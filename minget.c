@@ -46,12 +46,16 @@ int main(int argc, char *argv[])
       return SUCCESS;
    }
 
-   if((node->mode & MASK_DIR) == MASK_DIR) { 
+   if((node->mode & MASK_DIR) == MASK_DIR || 
+      (node->mode & FILE_TYPE) == SYM_LINK_TYPE) { 
       exit(ERROR);
    }
   
+   uint8_t *dyn_dest = malloc(node->size);
+   set_file_data(image_file_fd, node, dyn_dest);
+
    if (!dst_path_count) {
-      set_file_data(image_file_fd, node, stdout);
+      fwrite(dyn_dest, 1, node->size, stdout);
    }
    else {
       FILE *output;
@@ -59,7 +63,7 @@ int main(int argc, char *argv[])
          perror("open");
          exit(ERROR);
       }
-      set_file_data(image_file_fd, node, output);
+      fwrite(dyn_dest, 1, node->size, output);
    }
   
    return SUCCESS;

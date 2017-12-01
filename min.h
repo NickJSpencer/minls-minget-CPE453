@@ -9,15 +9,18 @@
    #define FALSE 0
 
    #define DIRECT_ZONES 7
-
+   
    #define PARTITION_TABLE_LOCATION 0x1BE
    #define SECTOR_SIZE 512  
+   #define BOOT_SIZE 1024
    #define MAGIC 19802
    #define BOOTABLE 0x80
    #define MINIX_TYPE 0x81
    #define VALID_510 0x55
    #define VALID_511 0xAA
 
+   #define FILE_TYPE 0170000
+   #define SYM_LINK_TYPE 0120000
    #define REGULAR_FILE 0100000
 
    #define MASK_DIR  0040000
@@ -88,15 +91,15 @@
       unsigned char name[60];
    };
 
-   struct superblock sb;
-   struct inode *inodes;   
-   struct partition part;
+   struct partition part;  /* Partition */
+   struct superblock sb;   /* Superblock of partition */
+   struct inode *inodes;   /* Reference to all inodes */
 
-   unsigned int zonesize;
+   unsigned int zonesize;  /* Size of zone */
 
-   short p_flag;
-   short s_flag;
-   short h_flag;
+   short p_flag;           /* Flag for if -p was provided */
+   short s_flag;           /* Flag for if source was provided */
+   short h_flag;           
    short v_flag;
       
    int prim_part;
@@ -132,7 +135,7 @@
    struct inode *get_directory_inode(FILE *fd, struct inode *node, int);
    struct directory *get_inodes_in_dir(FILE *fd, struct inode *node);
    void fill_dir(FILE *image, struct directory *dir, int location, int size);
-   void set_file_data(FILE *image, struct inode *node, FILE *dst);
+   void set_file_data(FILE *image, struct inode *node, uint8_t *ptr);
 
    void print_partition(struct partition part);
    void print_super_block(struct superblock sb);

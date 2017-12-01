@@ -4,10 +4,9 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include <errno.h>
+
 #include "min.h"
 
-/* Load partition object from image */
 void get_partition(FILE *image)
 {
    /* Default offset for primary partition */
@@ -73,7 +72,6 @@ void get_partition(FILE *image)
    validate_partition();
 }
 
-/* Ensure partition is of Minix type */
 void validate_partition() 
 {
    if (part.type != MINIX_TYPE) {
@@ -85,21 +83,20 @@ void validate_partition()
 }
 
 /* Validate a partition table based on an image and a partition offset
- * When used for the primary partition, the offset part_start is 0
- * When used for a subpartition table, the offset part_start is set to the 
+ * When used for the primary partition, the offset prim_start is 0
+ * When used for a subpartition table, the offset prim_start is set to the 
  * parent partition's start */
 void validate_partition_table(FILE *image)
 {
    uint8_t byte510;
    uint8_t byte511;
 
-   /* Seek to byte 510 in partition table */
-   if (fseek(image, part_start + 510, SEEK_SET) != 0)
+   /* Read the data at byte 510 in partition table */
+   if (fseek(image, 510 + part_start, SEEK_SET) != 0)
    {
       perror("fseek");
       exit(ERROR);
    }
-   /* Load data at byte 510 */
    if (!fread(&byte510, sizeof(uint8_t), 1, image))
    {
       perror("3fread");
@@ -125,17 +122,15 @@ void validate_partition_table(FILE *image)
    }
 }
 
-/* Store superblock data from file image */
 void get_super_block(FILE *image)
 {
-   /* Set super block's location in filesystem */
-   int seek_val = BOOT_SIZE;
+   int seek_val = 1024;
    if (p_flag)
    {
       seek_val += part.lFirst * SECTOR_SIZE;
    }
 
-   /* Seek too superblock */
+   /* Seek past boot block */
    if (fseek(image, seek_val, SEEK_SET) != 0) {
       perror("fseek");
       exit(ERROR);
@@ -147,19 +142,16 @@ void get_super_block(FILE *image)
       perror("5fread");
       exit(ERROR);
    }
-   
-   /* Update zonesize based on info in superblock */
+
    zonesize = sb.blocksize << sb.log_zone_size;
    
    if (v_flag) {
       print_super_block(sb);
    }
    
-   /* Validate */
    validate_superblock();
 }
 
-/* Ensure superblock has proper magic number */
 void validate_superblock()
 {
    if (sb.magic != MAGIC)
@@ -169,13 +161,10 @@ void validate_superblock()
    }
 }
 
-/* Load in inode and zone bitmaps
- * Do we ever need to use this?? */
 void get_bitmaps(FILE *image)
 {
-   /* Allocate memory for bitmaps */
-   inode_bitmap = (uint8_t *) malloc(sb.blocksize);
-   zone_bitmap = (uint8_t *) malloc(sb.blocksize);
+   inode_bitmap = (char *) malloc(sb.blocksize);
+   zone_bitmap = (char *) malloc(sb.blocksize);
 
    /* Seek past boot block and super block */
    if (fseek(image, 2 * sb.blocksize, SEEK_SET) != 0) {
@@ -227,40 +216,34 @@ void set_file_data(FILE *image, struct inode *node, uint8_t *dst) {
       
       /* Find size of write */
       int min_size = MIN(bytes_left, zonesize);
-
-      /* If zone is empty */
-      if (!node->zone[i] && min_size) {
-         if (!memset(dst + node->size - bytes_left, 0, min_size)) {
-            perror("memset");
-            exit(ERROR);
-         }
+      
+      /* Seek to src location in image */
+      if(fseek(image, part_start + node->zone[i] * zonesize, SEEK_SET) != 0) {
+         perror("fseek");
+         exit(ERROR);
       }
-      else {
-         /* Seek to src location in image */
-         if(fseek(image, part_start + node->zone[i] * zonesize, SEEK_SET) != 0){
-            perror("fseek");
-            exit(ERROR);
-         }
 
-         uint8_t buffer[min_size];
-         if (!fread(buffer, 1, min_size, image)) {
-            perror("1fread");
-            exit(ERROR);
-         }
+      uint8_t buffer[min_size];
+      if (!fread(buffer, 1, min_size, image)) {
+         perror("1fread");
+         exit(ERROR);
+      }
 
-         /* Write data to dst file */
-         if (!memcpy(dst + node->size - bytes_left, buffer, min_size)) {
-            perror("memcpy");
-            exit(ERROR);
-         }
+      /* Write data to dst file */
+      if (!memcpy(dst + node->size - bytes_left, buffer, min_size)) {
+         perror("memcpy");
+         exit(ERROR);
       }
       bytes_left -= min_size;
    }
 
    /* Iterate through indirect zones */
    for(i = 0; i < zonesize/4 && bytes_left > 0; i++) {
+      printf("i: %d\n", i);
+      printf("zo: %d\n", indirect_zone_offset);
+
       /* Seek to entry in indirect table */
-      if (fseek(image, node->indirect * zonesize + indirect_zone_offset, 
+      if (fseek(image, node->indirect * indirect_zone_offset * zonesize, 
             SEEK_SET) != 0) {
          perror("fseek");
          exit(ERROR);
@@ -273,39 +256,24 @@ void set_file_data(FILE *image, struct inode *node, uint8_t *dst) {
       indirect_zone_offset += 4;
 
       int min_size = MIN(bytes_left, zonesize);
- 
-      /* If zone is empty */
-      if (!zone && min_size) {
-         if (!memset(dst + node->size - bytes_left, 0, min_size)) {
-            perror("memset");
-            exit(ERROR);
-         }
+      
+      if(fseek(image, part_start + zone * zonesize, SEEK_SET) != 0) {
+         perror("fseek");
+         exit(ERROR);
       }
-      else {
-         if(fseek(image, part_start + zone * zonesize, SEEK_SET) != 0) {
-            perror("fseek");
-            exit(ERROR);
-         }
 
-         uint8_t buffer[min_size];
-         if (!fread(buffer, 1, min_size, image)) {
-            if (errno) {
-               perror("fread");
-               exit(ERROR);
-            }
-            if (!memset(dst + node->size - bytes_left, 0, min_size)) {
-               perror("memset");
-               exit(ERROR);
-            }
-         }  
-         else if(!memcpy(dst + node->size - bytes_left, buffer, min_size)) {
-            perror("memcpy");
-            exit(ERROR);
-         }
+      uint8_t buffer[min_size];
+      if (!fread(buffer, 1, min_size, image)) {
+         perror("3fread");
+         exit(ERROR);
+      }
+
+      if(!memcpy(dst + node->size - bytes_left, buffer, min_size)) {
+         perror("memcpy");
+         exit(ERROR);
       }
       bytes_left -= min_size;
    }
-   
 }
 
 struct directory *get_inodes_in_dir(FILE *image, struct inode *node) {

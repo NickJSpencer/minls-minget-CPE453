@@ -1,0 +1,529 @@
+
+
+-----------------
+2) unparitioned, blank:
+     minls /home/pn-cs453/Given/Asgn5/Images/BlankDisk 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (903) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+3) unpartitioned, files:
+     minls /home/pn-cs453/Given/Asgn5/Images/TestImage 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (927) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+5) partitioned, part 0:
+     minls -p0 /home/pn-cs453/Given/Asgn5/Images/Partitioned 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (971) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+6) partitioned, part 1:
+     minls -p1 /home/pn-cs453/Given/Asgn5/Images/Partitioned 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (989) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+7) partitioned, part 2:
+     minls -p2 /home/pn-cs453/Given/Asgn5/Images/Partitioned 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (1003) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+8) partitioned, part 3:
+     minls -p3 /home/pn-cs453/Given/Asgn5/Images/Partitioned 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (1019) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+12) subpart., good sub:
+     minls -p0 -s0 /home/pn-cs453/Given/Asgn5/Images/HardDisk 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (1079) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+14) unpartitioned, w/filename:
+     minls /home/pn-cs453/Given/Asgn5/Images/TestImage /Hello 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+15) partitioned, w/filename, p0:
+     minls -p0 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+16) partitioned, w/filename, p1:
+     minls -p1 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+17) partitioned, w/filename, p2:
+     minls -p2 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+18) partitioned, w/filename, p3:
+     minls -p3 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+19) subpart., no filename s0:
+     minls -p0 -s0 /home/pn-cs453/Given/Asgn5/Images/HardDisk 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (1248) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+20) subpart., no filename s2:
+     minls -p0 -s2 /home/pn-cs453/Given/Asgn5/Images/HardDisk 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (1273) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+21) subpart., w/filename:
+     minls -p0 -s2 /home/pn-cs453/Given/Asgn5/Images/HardDisk /home/pnico/Message 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+23) directories:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Files 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (1365) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+24) directories:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Files/0000_Zones 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+25) directories:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Files/0000_Zone 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+26) directories:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Files/0007_Zones 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+27) directories:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Files/0010_Zones 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+28) directories:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Files/1032_Zones 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+29) directories:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /DeepPaths/a/b/c/d/e/i/j/k/Files 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (1536) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+30) directories:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /DeepPaths/a/b/c/d/e/i/j/k/Files/Message 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+31) multi-zone directory:
+     minls /home/pn-cs453/Given/Asgn5/Images/BigDirectories 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (1596) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+32) multi-zone directory (file):
+     minls /home/pn-cs453/Given/Asgn5/Images/BigDirectories LastFile 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+33) indirect directory:
+     minls /home/pn-cs453/Given/Asgn5/Images/BigIndirectDirs Level1/Level2 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (1664) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+34) indirect directory (file):
+     minls /home/pn-cs453/Given/Asgn5/Images/BigIndirectDirs Level1/Level2/LastFile 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+35) directories-deleted:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Deleted 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (1727) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+36) directories-ok file:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Deleted/File-10 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+38) 1k blocks. dir.:
+     minls /home/pn-cs453/Given/Asgn5/Images/SmallBlocks--1k 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (1796) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+39) 1k blocks. file.:
+     minls /home/pn-cs453/Given/Asgn5/Images/SmallBlocks--1k DirTwo/FileTwo  
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+40) 16k zones. dir.:
+     minls /home/pn-cs453/Given/Asgn5/Images/BigZones-16k 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (1828) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+41) 16k zones. file.:
+     minls /home/pn-cs453/Given/Asgn5/Images/BigZones-16k /DirOne/FileTwo 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+42) 64k zones. dir:
+     minls /home/pn-cs453/Given/Asgn5/Images/ReallyBigZones-64k 
+-----------------
+Program exited with bad status: 65280
+
+Test program output:
+Error^M
+Child process (1856) exited due to signal (Segmentation fault).^M
+
+
+-----------------
+43) 64k zones. file:
+     minls /home/pn-cs453/Given/Asgn5/Images/ReallyBigZones-64k DirTwo/FileOne 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+44) 64k zones. longpath:
+     minls /home/pn-cs453/Given/Asgn5/Images/ReallyBigZones-64k /./.././../DirTwo/FileOne 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+45) Permissions 777:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Permissions/777 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+46) Permissions 755:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Permissions/755 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+47) Permissions 753:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Permissions/753 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+48) Permissions 357:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Permissions/357 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+49) Permissions 000:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Permissions/000 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+
+
+-----------------
+50) unpartitioned, w/filename:
+     minget /home/pn-cs453/Given/Asgn5/Images/TestImage /Hello 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< Hi, there.^M
+
+
+-----------------
+51) partitioned, w/filename, p0:
+     minget -p0 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 0^M
+
+
+-----------------
+52) partitioned, w/filename, p1:
+     minget -p1 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 1^M
+
+
+-----------------
+53) partitioned, w/filename, p2:
+     minget -p2 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 2^M
+
+
+-----------------
+54) partitioned, w/filename, p3:
+     minget -p3 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 3^M
+
+
+-----------------
+55) subpart., no filename s0:
+     minget -p0 -s0 /home/pn-cs453/Given/Asgn5/Images/HardDisk 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+56) subpart., no filename s2:
+     minget -p0 -s2 /home/pn-cs453/Given/Asgn5/Images/HardDisk 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+57) subpart., w/filename:
+     minget -p0 -s2 /home/pn-cs453/Given/Asgn5/Images/HardDisk /home/pnico/Message 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1,5d0
+< Hello.^M
+< ^M
+< If you can read this, you're getting somewhere.^M
+< ^M
+< Happy hacking.^M
+
+
+-----------------
+58) subpart., w/bad filename:
+     minget -p0 -s0 /home/pn-cs453/Given/Asgn5/Images/HardDisk /home/pnico/Message 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+59) unpartitioned, w/filename:
+     minget /home/pn-cs453/Given/Asgn5/Images/TestImage /Hello /dev/stdout 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+
+
+-----------------
+60) partitioned, w/filename, p0:
+     minget -p0 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message /dev/stdout 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 0^M
+
+
+-----------------
+61) partitioned, w/filename, p1:
+     minget -p1 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message /dev/stdout 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 1^M
+
+
+-----------------
+62) partitioned, w/filename, p2:
+     minget -p2 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message /dev/stdout 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 2^M
