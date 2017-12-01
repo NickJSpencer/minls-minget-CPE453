@@ -37,11 +37,19 @@ int main(int argc, char *argv[])
       print_inode(&inodes[0]);
    }
 
+   if (!src_path_count) {
+      exit(ERROR);
+   }
+
    struct inode *node = get_directory_inode(image_file_fd, &inodes[0], 0);
    if (!node->size) {
       return SUCCESS;
    }
-   
+
+   if((node->mode & MASK_DIR) == MASK_DIR) { 
+      exit(ERROR);
+   }
+  
    FILE *output;
    if (dst_path_count && (output = fopen(dst_path_string, "w")) == NULL) {
       perror("open");

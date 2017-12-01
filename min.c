@@ -207,11 +207,12 @@ void get_inodes(FILE *image)
 
 void set_file_data(FILE *image, struct inode *node, FILE *dst) {
    unsigned int zone;
+   int i;
    int indirect_zone_offset = 0;
    int bytes_left = node->size;
 
    /* Iterate through inodes direct zones */
-   for(int i = 0; i < DIRECT_ZONES && bytes_left > 0; i++) {
+   for(i = 0; i < DIRECT_ZONES && bytes_left > 0; i++) {
       
       /* Find size of write */
       int min_size = MIN(bytes_left, zonesize);
@@ -229,15 +230,20 @@ void set_file_data(FILE *image, struct inode *node, FILE *dst) {
       }
 
       /* Write data to dst file */
-      fwrite(buffer, 1, min_size, dst + node->size - bytes_left);
+      if(!fwrite(buffer, 1, min_size, dst + node->size - bytes_left)) {
+         perror("fwrite");
+         exit(ERROR);
+      }
 
       bytes_left -= min_size;
    }
 
    /* Iterate through indirect zones */
-   for(int i = 0; i < zonesize/4 && bytes_left > 0; i++) {
+   for(i = 0; i < zonesize/4 && bytes_left > 0; i++) {
+   printf("%d\n", bytes_left);
       /* Seek to entry in indirect table */
-      if (fseek(image, node->indirect * indirect_zone_offset * zonesize, SEEK_SET) != 0) {
+      if (fseek(image, node->indirect * indirect_zone_offset * zonesize, 
+            SEEK_SET) != 0) {
          perror("fseek");
          exit(ERROR);
       }
