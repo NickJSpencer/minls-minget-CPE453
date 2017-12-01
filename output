@@ -1,0 +1,1265 @@
+
+------------------------
+Looking for source files
+------------------------
+
+Found: min.c minget.c min.h minls.c
+
+--------------------------------
+Checking for long lines (no program should have any lines > 80 chars)
+(run ~pnico/bin/longlines.pl on your files to check.)
+--------------------------------
+
+Line length ok.
+
+Found: Makefile
+
+------------------------------------
+Building the application: "make all"
+------------------------------------
+
+make all
+make: Nothing to be done for `all'.
+
+---------------
+checking for executables
+---------------
+
+----------------------
+Testing verbose behavior
+----------------------
+minls -v Images/TestImage
+./minls -v /home/pn-cs453/Given/Asgn5/Images/TestImage
+Partition Contents:
+bootind      0x0
+start_head   0
+start_sec    0
+start_cyl    0
+type         0x0
+end_head     0
+end_sec      0
+end_cyl      0
+lFirst       0
+size         0
+Superblock Contents:
+Stored Fields:
+  ninodes        768
+  i_blocks       1
+  z_blocks       1
+  firstdata      16
+  log_zone_size  0 (zone size: 4096)
+  max_file       4294967295
+  magic          0x4d5a
+  zones          360
+  blocksize      4096
+  subversion     0
+
+File inode:
+  uint16_t mode       0x41ff (drwxrwxrwx)
+  uint16_t links      3
+  uint16_t uid        2
+  uint16_t gid        2
+  uint16_t size       384
+  uint32_t atime      1141098157 --- Mon Feb 27 19:42:37 2006
+  uint32_t mtime      1141098157 --- Mon Feb 27 19:42:37 2006
+  uint32_t ctime      1141098157 --- Mon Feb 27 19:42:37 2006
+
+Direct zones:
+            zone[0] =    16
+            zone[1] =     0
+            zone[2] =     0
+            zone[3] =     0
+            zone[4] =     0
+            zone[5] =     0
+            zone[6] =     0
+uint32_t    indirect      0
+uint32_t    double        0
+Partition 0:
+/:
+drwxrwxrwx     384 .
+drwxrwxrwx     384 ..
+-rw-r--r--   73991 Other
+drwxr-xr-x    3200 src
+-rw-r--r--      11 Hello
+
+minls -v -p 0 Images/HardDisk
+./minls -v -p 0 /home/pn-cs453/Given/Asgn5/Images/HardDisk
+Partition Contents:
+bootind      0x80
+start_head   1
+start_sec    1
+start_cyl    0
+type         0x81
+end_head     5
+end_sec      209
+end_cyl      171
+lFirst       17
+size         95863
+Superblock Contents:
+Stored Fields:
+  ninodes        0
+  i_blocks       0
+  z_blocks       0
+  firstdata      0
+  log_zone_size  0 (zone size: 0)
+  max_file       0
+  magic          0x0000
+  zones          0
+  blocksize      0
+  subversion     0
+
+Error: filesystem is not a minix filesystem
+Partition 0:
+
+minls -v -p 0 -s 0 Images/HardDisk
+Partition Contents:
+bootind      0x80
+start_head   1
+start_sec    2
+start_cyl    0
+type         0x81
+end_head     2
+end_sec      8
+end_cyl      28
+lFirst       18
+size         2880
+Superblock Contents:
+Stored Fields:
+  ninodes        768
+  i_blocks       1
+  z_blocks       1
+  firstdata      16
+  log_zone_size  0 (zone size: 4096)
+  max_file       4294967295
+  magic          0x4d5a
+  zones          360
+  blocksize      4096
+  subversion     0
+
+File inode:
+  uint16_t mode       0x41ff (drwxrwxrwx)
+  uint16_t links      10
+  uint16_t uid        2
+  uint16_t gid        2
+  uint16_t size       640
+  uint32_t atime      1141096963 --- Mon Feb 27 19:22:43 2006
+  uint32_t mtime      1141096883 --- Mon Feb 27 19:21:23 2006
+  uint32_t ctime      1141096883 --- Mon Feb 27 19:21:23 2006
+
+Direct zones:
+            zone[0] =    16
+            zone[1] =     0
+            zone[2] =     0
+            zone[3] =     0
+            zone[4] =     0
+            zone[5] =     0
+            zone[6] =     0
+uint32_t    indirect      0
+uint32_t    double        0
+Partition 0:
+/:
+drwxrwxrwx     640 .
+drwxrwxrwx     640 ..
+drwxr-xr-x     128 usr
+drwxr-xr-x     128 tmp
+drwxr-xr-x    2624 bin
+drwxr-xr-x    1472 etc
+drwxr-xr-x     768 sbin
+drwxr-xr-x   14144 dev
+drwxr-xr-x     192 lib
+drwxr-xr-x     256 boot
+
+
+------------------------
+Running the application 
+------------------------
+
+   =======================================================================
+  Test                                                          Status
+       Cmd: Prog Arguments                                
+   =======================================================================
+  1 -- Usage test                                                       ok.
+       Cmd: minls -h                                       
+  2 -- unparitioned, blank                                              ok.
+       Cmd: minls BlankDisk                                
+  3 -- unpartitioned, files                                             ok.
+       Cmd: minls TestImage                                
+  4 -- unpartitioned, bad superblock                                    ok.
+       Cmd: minls RandomDisk                               
+  5 -- partitioned, part 0                                              ok.
+       Cmd: minls -p 0 Partitioned                         
+  6 -- partitioned, part 1                                              ok.
+       Cmd: minls -p 1 Partitioned                         
+  7 -- partitioned, part 2                                              ok.
+       Cmd: minls -p 2 Partitioned                         
+  8 -- partitioned, part 3                                              ok.
+       Cmd: minls -p 3 Partitioned                         
+  9 -- partitioned, bad part                                            ok.
+       Cmd: minls -p 5 Partitioned                         
+ 10 -- partitioned, no part                                             ok.
+       Cmd: minls Partitioned                              
+ 11 -- partitioned, not minix                                           ok.
+       Cmd: minls -p 1 HardDisk                            
+ 12 -- subpart., good sub                                               ok.
+       Cmd: minls -p 0 -s 0 HardDisk                       
+ 13 -- subpart., bad sub                                                ok.
+       Cmd: minls -p 0 -s 1 HardDisk                       
+ 14 -- unpartitioned, w/filename                                        ok.
+       Cmd: minls TestImage /Hello                         
+ 15 -- partitioned, w/filename, p0                                      ok.
+       Cmd: minls -p 0 Partitioned /Message                
+ 16 -- partitioned, w/filename, p1                                      ok.
+       Cmd: minls -p 1 Partitioned /Message                
+ 17 -- partitioned, w/filename, p2                                      ok.
+       Cmd: minls -p 2 Partitioned /Message                
+ 18 -- partitioned, w/filename, p3                                      ok.
+       Cmd: minls -p 3 Partitioned /Message                
+ 19 -- subpart., no filename s0                                         ok.
+       Cmd: minls -p 0 -s 0 HardDisk                       
+ 20 -- subpart., no filename s2                                         ok.
+       Cmd: minls -p 0 -s 2 HardDisk                       
+ 21 -- subpart., w/filename                                             ok.
+       Cmd: minls -p 0 -s 2 HardDisk /home/pnico/Message   
+ 22 -- subpart., w/bad filename                                         ok.
+       Cmd: minls -p 0 -s 0 HardDisk /home/pnico/Message   
+ 23 -- directories                                                  FAILED.
+       Cmd: minls Files /Files                             
+ 24 -- directories                                                      ok.
+       Cmd: minls Files /Files/0000_Zones                  
+ 25 -- directories                                                      ok.
+       Cmd: minls Files /Files/0000_Zone                   
+ 26 -- directories                                                      ok.
+       Cmd: minls Files /Files/0007_Zones                  
+ 27 -- directories                                                      ok.
+       Cmd: minls Files /Files/0010_Zones                  
+ 28 -- directories                                                      ok.
+       Cmd: minls Files /Files/1032_Zones                  
+ 29 -- directories                                                  FAILED.
+       Cmd: minls Files /DeepPaths/a/b/c/d/e/i/j/k/Files   
+ 30 -- directories                                                      ok.
+       Cmd: minls Files /DeepPaths/a/b/c/d/e/i/j/k/Files/Message 
+ 31 -- multi-zone directory                                             ok.
+       Cmd: minls BigDirectories                           
+ 32 -- multi-zone directory (file)                                  FAILED.
+       Cmd: minls BigDirectories LastFile                  
+ 33 -- indirect directory                                           FAILED.
+       Cmd: minls BigIndirectDirs Level1/Level2            
+ 34 -- indirect directory (file)                                    FAILED.
+       Cmd: minls BigIndirectDirs Level1/Level2/LastFile   
+ 35 -- directories-deleted                                          FAILED.
+       Cmd: minls Files /Deleted                           
+ 36 -- directories-ok file                                              ok.
+       Cmd: minls Files /Deleted/File-10                   
+ 37 -- directories-deleted file                                         ok.
+       Cmd: minls Files /Deleted/File-05                   
+ 38 -- 1k blocks. dir.                                                  ok.
+       Cmd: minls SmallBlocks--1k                          
+ 39 -- 1k blocks. file.                                             FAILED.
+       Cmd: minls SmallBlocks--1k DirTwo/FileTwo           
+ 40 -- 16k zones. dir.                                              FAILED.
+       Cmd: minls BigZones-16k                             
+ 41 -- 16k zones. file.                                             FAILED.
+       Cmd: minls BigZones-16k /DirOne/FileTwo             
+ 42 -- 64k zones. dir                                               FAILED.
+       Cmd: minls ReallyBigZones-64k                       
+ 43 -- 64k zones. file                                              FAILED.
+       Cmd: minls ReallyBigZones-64k DirTwo/FileOne        
+ 44 -- 64k zones. longpath                                          FAILED.
+       Cmd: minls ReallyBigZones-64k /./.././../DirTwo/FileOne 
+ 45 -- Permissions 777                                                  ok.
+       Cmd: minls Files /Permissions/777                   
+ 46 -- Permissions 755                                                  ok.
+       Cmd: minls Files /Permissions/755                   
+ 47 -- Permissions 753                                                  ok.
+       Cmd: minls Files /Permissions/753                   
+ 48 -- Permissions 357                                                  ok.
+       Cmd: minls Files /Permissions/357                   
+ 49 -- Permissions 000                                                  ok.
+       Cmd: minls Files /Permissions/000                   
+ 50 -- unpartitioned, w/filename                                    FAILED.
+       Cmd: minget TestImage /Hello                         
+ 51 -- partitioned, w/filename, p0                                  FAILED.
+       Cmd: minget -p 0 Partitioned /Message                
+ 52 -- partitioned, w/filename, p1                                  FAILED.
+       Cmd: minget -p 1 Partitioned /Message                
+ 53 -- partitioned, w/filename, p2                                  FAILED.
+       Cmd: minget -p 2 Partitioned /Message                
+ 54 -- partitioned, w/filename, p3                                  FAILED.
+       Cmd: minget -p 3 Partitioned /Message                
+ 55 -- subpart., no filename s0                                     FAILED.
+       Cmd: minget -p 0 -s 0 HardDisk                       
+ 56 -- subpart., no filename s2                                     FAILED.
+       Cmd: minget -p 0 -s 2 HardDisk                       
+ 57 -- subpart., w/filename                                         FAILED.
+       Cmd: minget -p 0 -s 2 HardDisk /home/pnico/Message   
+ 58 -- subpart., w/bad filename                                     FAILED.
+       Cmd: minget -p 0 -s 0 HardDisk /home/pnico/Message   
+ 59 -- unpartitioned, w/filename                                    FAILED.
+       Cmd: minget TestImage /Hello /dev/stdout             
+ 60 -- partitioned, w/filename, p0                                  FAILED.
+       Cmd: minget -p 0 Partitioned /Message /dev/stdout    
+ 61 -- partitioned, w/filename, p1                                  FAILED.
+       Cmd: minget -p 1 Partitioned /Message /dev/stdout    
+ 62 -- partitioned, w/filename, p2                                  FAILED.
+       Cmd: minget -p 2 Partitioned /Message /dev/stdout    
+ 63 -- partitioned, w/filename, p3                                  FAILED.
+       Cmd: minget -p 3 Partitioned /Message /dev/stdout    
+ 64 -- subpart., no filename s0                                     FAILED.
+       Cmd: minget -p 0 -s 0 HardDisk /dev/stdout           
+ 65 -- subpart., no filename s2                                     FAILED.
+       Cmd: minget -p 0 -s 2 HardDisk /dev/stdout           
+ 66 -- subpart., w/filename                                         FAILED.
+       Cmd: minget -p 0 -s 2 HardDisk /home/pnico/Message /dev/stdout 
+ 67 -- subpart., w/bad filename                                     FAILED.
+       Cmd: minget -p 0 -s 0 HardDisk /home/pnico/Message /dev/stdout 
+ 68 -- directories                                                  FAILED.
+       Cmd: minget Files /Files                             
+ 69 -- directories                                                  FAILED.
+       Cmd: minget Files /DeepPaths/Distraction             
+ 70 -- directories                                                  FAILED.
+       Cmd: minget Files /DeepPaths/a/b/c/d/e/i/j/k/Files   
+ 71 -- directories                                                  FAILED.
+       Cmd: minget Files /DeepPaths/a/b/c/d/e/i/j/k/Files/Message 
+ 72 -- directories                                                  FAILED.
+       Cmd: minget Files /Files /dev/stdout                 
+ 73 -- directories                                                  FAILED.
+       Cmd: minget Files /DeepPaths/Distraction /dev/stdout 
+ 74 -- directories                                                  FAILED.
+       Cmd: minget Files /DeepPaths/a/b/c/d/e/i/j/k/Files /dev/stdout 
+ 75 -- directories                                                  FAILED.
+       Cmd: minget Files /DeepPaths/a/b/c/d/e/i/j/k/Files/Message /dev/stdout 
+ 76 -- multi-zone directory (file)                                  FAILED.
+       Cmd: minget BigDirectories LastFile                  
+ 77 -- multi-zone directory (file)                                  FAILED.
+       Cmd: minget BigDirectories LastFile /dev/stdout      
+ 78 -- indirect directory (file)                                    FAILED.
+       Cmd: minget BigIndirectDirs Level1/Level2/LastFile   
+ 79 -- indirect directory (file)                                    FAILED.
+       Cmd: minget BigIndirectDirs Level1/Level2/LastFile /dev/stdout 
+ 80 -- directories-deleted                                          FAILED.
+       Cmd: minget Files /Deleted                           
+ 81 -- directories-ok file                                          FAILED.
+       Cmd: minget Files /Deleted/File-10                   
+ 82 -- directories-deleted file                                     FAILED.
+       Cmd: minget Files /Deleted/File-05                   
+ 83 -- directories-deleted                                          FAILED.
+       Cmd: minget Files /Deleted /dev/stdout               
+ 84 -- directories-ok file                                          FAILED.
+       Cmd: minget Files /Deleted/File-10 /dev/stdout       
+ 85 -- directories-deleted file                                     FAILED.
+       Cmd: minget Files /Deleted/File-05 /dev/stdout       
+ 86 -- 1k blocks. dir.                                                  ok.
+       Cmd: minls SmallBlocks--1k                          
+ 87 -- 1k blocks. file.                                             FAILED.
+       Cmd: minls SmallBlocks--1k DirTwo/FileTwo           
+ 88 -- 16k zones. dir.                                              FAILED.
+       Cmd: minls BigZones-16k                             
+ 89 -- 16k zones. file.                                             FAILED.
+       Cmd: minls BigZones-16k /DirOne/FileTwo             
+ 90 -- 64k zones. dir                                               FAILED.
+       Cmd: minls ReallyBigZones-64k                       
+ 91 -- 64k zones. file                                              FAILED.
+       Cmd: minls ReallyBigZones-64k DirTwo/FileOne        
+ 92 -- 64k zones. longpath                                          FAILED.
+       Cmd: minls ReallyBigZones-64k /./.././../DirTwo/FileOne 
+ 93 -- Files size tests                                                 ok.
+       Cmd: minget Files /Files/0000_Zones                  
+ 94 -- Files size tests                                             FAILED.
+       Cmd: minget Files /Files/0000_Zone                   
+ 95 -- Files size tests                                             FAILED.
+       Cmd: minget Files /Files/0007_Zones                  
+ 96 -- Files size tests                                             FAILED.
+       Cmd: minget Files /Files/0010_Zones                  
+ 97 -- Files size tests                                             FAILED.
+       Cmd: minget Files /Files/1032_Zones                  
+ 98 -- Files size tests                                                 ok.
+       Cmd: minget Files /Files/0000_Zones /dev/stdout      
+ 99 -- Files size tests                                             FAILED.
+       Cmd: minget Files /Files/0000_Zone /dev/stdout       
+100 -- Files size tests                                             FAILED.
+       Cmd: minget Files /Files/0007_Zones /dev/stdout      
+101 -- Files size tests                                             FAILED.
+       Cmd: minget Files /Files/0010_Zones /dev/stdout      
+102 -- Files size tests                                             FAILED.
+       Cmd: minget Files /Files/1032_Zones /dev/stdout      
+103 -- Reading files with holes                                     FAILED.
+       Cmd: minget Files /Holes/nohole         /dev/stdout  
+104 -- Reading files with holes                                     FAILED.
+       Cmd: minget Files /Holes/direct         /dev/stdout  
+105 -- Reading files with holes                                     FAILED.
+       Cmd: minget Files /Holes/into-indirect  /dev/stdout  
+106 -- Reading files with holes                                     FAILED.
+       Cmd: minget Files /Holes/whole-indirect /dev/stdout  
+107 -- Reading files with holes                                     FAILED.
+       Cmd: minget Files /Holes/double         /dev/stdout  
+108 -- Reading files with holes                                     FAILED.
+       Cmd: minget Files /Holes/nohole                      
+109 -- Reading files with holes                                     FAILED.
+       Cmd: minget Files /Holes/direct                      
+110 -- Reading files with holes                                     FAILED.
+       Cmd: minget Files /Holes/into-indirect               
+111 -- Reading files with holes                                     FAILED.
+       Cmd: minget Files /Holes/whole-indirect              
+112 -- Reading files with holes                                     FAILED.
+       Cmd: minget Files /Holes/double                      
+113 -- minls:  partition table with bad type                            ok.
+       Cmd: minls -p 0 BrokenStuff                         
+114 -- minget: partition table with bad type                        FAILED.
+       Cmd: minget -p 0 BrokenStuff README /dev/stdout      
+115 -- minls:  superblock with bad magic                                ok.
+       Cmd: minls -p 1 BrokenStuff                         
+116 -- minget: superblock with bad magic                            FAILED.
+       Cmd: minget -p 1 BrokenStuff README /dev/stdout      
+117 -- minls:  partition table with bad magic                           ok.
+       Cmd: minls -p 2 -s 0 BrokenStuff                    
+118 -- minget: partition table with bad magic                       FAILED.
+       Cmd: minget -p 2 -s 0 BrokenStuff README /dev/stdout 
+119 -- minls:  trying to traverse a file                            FAILED.
+       Cmd: minls WeirdStuff NotADir/This_file_does_not_exist 
+120 -- minget: trying to traverse a file                            FAILED.
+       Cmd: minget WeirdStuff NotADir/This_file_does_not_exist /dev/stdout 
+121 -- minget: trying to get a symlink                              FAILED.
+       Cmd: minget WeirdStuff SymLink                       
+122 -- minget: trying to get a directory                            FAILED.
+       Cmd: minget TestImage src /dev/stdout                
+   =======================================================================
+Failure. (43/122 passed)
+
+Actual ouput from tests and detailed results are below.
+
+
+
+-----------------
+23) directories:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Files 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+Error: Incorrect source path^M
+
+
+-----------------
+29) directories:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /DeepPaths/a/b/c/d/e/i/j/k/Files 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+Error: Incorrect source path^M
+
+
+-----------------
+32) multi-zone directory (file):
+     minls /home/pn-cs453/Given/Asgn5/Images/BigDirectories LastFile 
+-----------------
+Test program output:
+-rw-r--r--      64 /LastFileDiffs: ( < Reference > Testfile ):
+1c1
+< -rw-r--r--        64 LastFile^M
+---
+> -rw-r--r--      64 /LastFile
+\ No newline at end of file
+
+
+-----------------
+33) indirect directory:
+     minls /home/pn-cs453/Given/Asgn5/Images/BigIndirectDirs Level1/Level2 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+Error: Incorrect source path^M
+
+
+-----------------
+34) indirect directory (file):
+     minls /home/pn-cs453/Given/Asgn5/Images/BigIndirectDirs Level1/Level2/LastFile 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+Error: Incorrect source path^M
+
+
+-----------------
+35) directories-deleted:
+     minls /home/pn-cs453/Given/Asgn5/Images/Files /Deleted 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+Error: Incorrect source path^M
+
+
+-----------------
+39) 1k blocks. file.:
+     minls /home/pn-cs453/Given/Asgn5/Images/SmallBlocks--1k DirTwo/FileTwo  
+-----------------
+Test program output:
+-rwxr-xr-x   20596 /DirTwo/FileTwoDiffs: ( < Reference > Testfile ):
+1c1
+< -rwxr-xr-x     20596 DirTwo/FileTwo^M
+---
+> -rwxr-xr-x   20596 /DirTwo/FileTwo
+\ No newline at end of file
+
+
+-----------------
+40) 16k zones. dir.:
+     minls /home/pn-cs453/Given/Asgn5/Images/BigZones-16k 
+-----------------
+Test program output:
+/:^M
+Diffs: ( < Reference > Testfile ):
+2,5d1
+< drwxrwxrwx       256 .^M
+< drwxrwxrwx       256 ..^M
+< drwxr-xr-x       256 DirOne^M
+< drwxr-xr-x       256 DirTwo^M
+
+
+-----------------
+41) 16k zones. file.:
+     minls /home/pn-cs453/Given/Asgn5/Images/BigZones-16k /DirOne/FileTwo 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+Error: Incorrect source path^M
+
+
+-----------------
+42) 64k zones. dir:
+     minls /home/pn-cs453/Given/Asgn5/Images/ReallyBigZones-64k 
+-----------------
+Test program output:
+/:^M
+Diffs: ( < Reference > Testfile ):
+2,5d1
+< drwxrwxrwx       256 .^M
+< drwxrwxrwx       256 ..^M
+< drwxr-xr-x       256 DirOne^M
+< drwxr-xr-x       256 DirTwo^M
+
+
+-----------------
+43) 64k zones. file:
+     minls /home/pn-cs453/Given/Asgn5/Images/ReallyBigZones-64k DirTwo/FileOne 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+Error: Incorrect source path^M
+
+
+-----------------
+44) 64k zones. longpath:
+     minls /home/pn-cs453/Given/Asgn5/Images/ReallyBigZones-64k /./.././../DirTwo/FileOne 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+Error: Incorrect source path^M
+
+
+-----------------
+50) unpartitioned, w/filename:
+     minget /home/pn-cs453/Given/Asgn5/Images/TestImage /Hello 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< Hi, there.^M
+
+
+-----------------
+51) partitioned, w/filename, p0:
+     minget -p 0 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 0^M
+
+
+-----------------
+52) partitioned, w/filename, p1:
+     minget -p 1 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 1^M
+
+
+-----------------
+53) partitioned, w/filename, p2:
+     minget -p 2 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 2^M
+
+
+-----------------
+54) partitioned, w/filename, p3:
+     minget -p 3 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 3^M
+
+
+-----------------
+55) subpart., no filename s0:
+     minget -p 0 -s 0 /home/pn-cs453/Given/Asgn5/Images/HardDisk 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+56) subpart., no filename s2:
+     minget -p 0 -s 2 /home/pn-cs453/Given/Asgn5/Images/HardDisk 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+57) subpart., w/filename:
+     minget -p 0 -s 2 /home/pn-cs453/Given/Asgn5/Images/HardDisk /home/pnico/Message 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1,5d0
+< Hello.^M
+< ^M
+< If you can read this, you're getting somewhere.^M
+< ^M
+< Happy hacking.^M
+
+
+-----------------
+58) subpart., w/bad filename:
+     minget -p 0 -s 0 /home/pn-cs453/Given/Asgn5/Images/HardDisk /home/pnico/Message 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+59) unpartitioned, w/filename:
+     minget /home/pn-cs453/Given/Asgn5/Images/TestImage /Hello /dev/stdout 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< Hi, there.^M
+
+
+-----------------
+60) partitioned, w/filename, p0:
+     minget -p 0 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message /dev/stdout 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 0^M
+
+
+-----------------
+61) partitioned, w/filename, p1:
+     minget -p 1 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message /dev/stdout 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 1^M
+
+
+-----------------
+62) partitioned, w/filename, p2:
+     minget -p 2 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message /dev/stdout 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 2^M
+
+
+-----------------
+63) partitioned, w/filename, p3:
+     minget -p 3 /home/pn-cs453/Given/Asgn5/Images/Partitioned /Message /dev/stdout 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is partition 3^M
+
+
+-----------------
+64) subpart., no filename s0:
+     minget -p 0 -s 0 /home/pn-cs453/Given/Asgn5/Images/HardDisk /dev/stdout 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+65) subpart., no filename s2:
+     minget -p 0 -s 2 /home/pn-cs453/Given/Asgn5/Images/HardDisk /dev/stdout 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+66) subpart., w/filename:
+     minget -p 0 -s 2 /home/pn-cs453/Given/Asgn5/Images/HardDisk /home/pnico/Message /dev/stdout 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1,5d0
+< Hello.^M
+< ^M
+< If you can read this, you're getting somewhere.^M
+< ^M
+< Happy hacking.^M
+
+
+-----------------
+67) subpart., w/bad filename:
+     minget -p 0 -s 0 /home/pn-cs453/Given/Asgn5/Images/HardDisk /home/pnico/Message /dev/stdout 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+68) directories:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Files 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+69) directories:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /DeepPaths/Distraction 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+70) directories:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /DeepPaths/a/b/c/d/e/i/j/k/Files 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+71) directories:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /DeepPaths/a/b/c/d/e/i/j/k/Files/Message 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is at the bottom of a/b/c/d/e/i/j/k/Files^M
+
+
+-----------------
+72) directories:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Files /dev/stdout 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+73) directories:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /DeepPaths/Distraction /dev/stdout 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+74) directories:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /DeepPaths/a/b/c/d/e/i/j/k/Files /dev/stdout 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+75) directories:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /DeepPaths/a/b/c/d/e/i/j/k/Files/Message /dev/stdout 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1d0
+< This is at the bottom of a/b/c/d/e/i/j/k/Files^M
+
+
+-----------------
+76) multi-zone directory (file):
+     minget /home/pn-cs453/Given/Asgn5/Images/BigDirectories LastFile 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1,6d0
+< ^M
+< ^M
+< When angry, count four;^M
+< when very angry, swear.^M
+<   - M. Twain^M
+< ^M
+
+
+-----------------
+77) multi-zone directory (file):
+     minget /home/pn-cs453/Given/Asgn5/Images/BigDirectories LastFile /dev/stdout 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1,6d0
+< ^M
+< ^M
+< When angry, count four;^M
+< when very angry, swear.^M
+<   - M. Twain^M
+< ^M
+
+
+-----------------
+78) indirect directory (file):
+     minget /home/pn-cs453/Given/Asgn5/Images/BigIndirectDirs Level1/Level2/LastFile 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1,5d0
+< ^M
+< ^M
+< Never underestimate the power of human stupidity.^M
+<   - From the "Notebooks of Lazarus Long" by Robert Heinlein^M
+< ^M
+
+
+-----------------
+79) indirect directory (file):
+     minget /home/pn-cs453/Given/Asgn5/Images/BigIndirectDirs Level1/Level2/LastFile /dev/stdout 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1,5d0
+< ^M
+< ^M
+< Never underestimate the power of human stupidity.^M
+<   - From the "Notebooks of Lazarus Long" by Robert Heinlein^M
+< ^M
+
+
+-----------------
+80) directories-deleted:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Deleted 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+81) directories-ok file:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Deleted/File-10 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1,11d0
+< #!/bin/sh^M
+< #^M
+< # cd 1.3 - equivalents for normally builtin commands.	Author: Kees J. Bot^M
+< ^M
+< case $0 in^M
+< */*)	command="`expr "$0" : '.*/\(.*\)'`"^M
+< 	;;^M
+< *)	command="$0"^M
+< esac^M
+< ^M
+< "$command" "$@"^M
+
+
+-----------------
+82) directories-deleted file:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Deleted/File-05 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+83) directories-deleted:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Deleted /dev/stdout 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+84) directories-ok file:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Deleted/File-10 /dev/stdout 
+-----------------
+Test program output:
+Diffs: ( < Reference > Testfile ):
+1,11d0
+< #!/bin/sh^M
+< #^M
+< # cd 1.3 - equivalents for normally builtin commands.	Author: Kees J. Bot^M
+< ^M
+< case $0 in^M
+< */*)	command="`expr "$0" : '.*/\(.*\)'`"^M
+< 	;;^M
+< *)	command="$0"^M
+< esac^M
+< ^M
+< "$command" "$@"^M
+
+
+-----------------
+85) directories-deleted file:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Deleted/File-05 /dev/stdout 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+87) 1k blocks. file.:
+     minls /home/pn-cs453/Given/Asgn5/Images/SmallBlocks--1k DirTwo/FileTwo  
+-----------------
+Test program output:
+-rwxr-xr-x   20596 /DirTwo/FileTwoDiffs: ( < Reference > Testfile ):
+1c1
+< -rwxr-xr-x     20596 DirTwo/FileTwo^M
+---
+> -rwxr-xr-x   20596 /DirTwo/FileTwo
+\ No newline at end of file
+
+
+-----------------
+88) 16k zones. dir.:
+     minls /home/pn-cs453/Given/Asgn5/Images/BigZones-16k 
+-----------------
+Test program output:
+/:^M
+Diffs: ( < Reference > Testfile ):
+2,5d1
+< drwxrwxrwx       256 .^M
+< drwxrwxrwx       256 ..^M
+< drwxr-xr-x       256 DirOne^M
+< drwxr-xr-x       256 DirTwo^M
+
+
+-----------------
+89) 16k zones. file.:
+     minls /home/pn-cs453/Given/Asgn5/Images/BigZones-16k /DirOne/FileTwo 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+Error: Incorrect source path^M
+
+
+-----------------
+90) 64k zones. dir:
+     minls /home/pn-cs453/Given/Asgn5/Images/ReallyBigZones-64k 
+-----------------
+Test program output:
+/:^M
+Diffs: ( < Reference > Testfile ):
+2,5d1
+< drwxrwxrwx       256 .^M
+< drwxrwxrwx       256 ..^M
+< drwxr-xr-x       256 DirOne^M
+< drwxr-xr-x       256 DirTwo^M
+
+
+-----------------
+91) 64k zones. file:
+     minls /home/pn-cs453/Given/Asgn5/Images/ReallyBigZones-64k DirTwo/FileOne 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+Error: Incorrect source path^M
+
+
+-----------------
+92) 64k zones. longpath:
+     minls /home/pn-cs453/Given/Asgn5/Images/ReallyBigZones-64k /./.././../DirTwo/FileOne 
+-----------------
+Program exited with bad status: 256
+
+Test program output:
+Error: Incorrect source path^M
+
+
+-----------------
+94) Files size tests:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Files/0000_Zone 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/94 and testminfs.1278 differ
+
+
+-----------------
+95) Files size tests:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Files/0007_Zones 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/95 and testminfs.1278 differ
+
+
+-----------------
+96) Files size tests:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Files/0010_Zones 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/96 and testminfs.1278 differ
+
+
+-----------------
+97) Files size tests:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Files/1032_Zones 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/97 and testminfs.1278 differ
+
+
+-----------------
+99) Files size tests:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Files/0000_Zone /dev/stdout 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/99 and testminfs.1278 differ
+
+
+-----------------
+100) Files size tests:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Files/0007_Zones /dev/stdout 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/100 and testminfs.1278 differ
+
+
+-----------------
+101) Files size tests:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Files/0010_Zones /dev/stdout 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/101 and testminfs.1278 differ
+
+
+-----------------
+102) Files size tests:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Files/1032_Zones /dev/stdout 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/102 and testminfs.1278 differ
+
+
+-----------------
+103) Reading files with holes:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Holes/nohole         /dev/stdout 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/103 and testminfs.1278 differ
+
+
+-----------------
+104) Reading files with holes:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Holes/direct         /dev/stdout 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/104 and testminfs.1278 differ
+
+
+-----------------
+105) Reading files with holes:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Holes/into-indirect  /dev/stdout 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/105 and testminfs.1278 differ
+
+
+-----------------
+106) Reading files with holes:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Holes/whole-indirect /dev/stdout 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/106 and testminfs.1278 differ
+
+
+-----------------
+107) Reading files with holes:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Holes/double         /dev/stdout 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/107 and testminfs.1278 differ
+
+
+-----------------
+108) Reading files with holes:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Holes/nohole 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/108 and testminfs.1278 differ
+
+
+-----------------
+109) Reading files with holes:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Holes/direct 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/109 and testminfs.1278 differ
+
+
+-----------------
+110) Reading files with holes:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Holes/into-indirect 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/110 and testminfs.1278 differ
+
+
+-----------------
+111) Reading files with holes:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Holes/whole-indirect 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/111 and testminfs.1278 differ
+
+
+-----------------
+112) Reading files with holes:
+     minget /home/pn-cs453/Given/Asgn5/Images/Files /Holes/double 
+-----------------
+Test program output:
+ --- Output limited to 10 lines. (There would be too much.) ---
+Diffs: ( < Reference > Testfile ):
+ --- Output limited to 10 lines. (There would be too much.) ---
+Binary files /home/pn-cs453/Given/Asgn5/Expected/112 and testminfs.1278 differ
+
+
+-----------------
+114) minget: partition table with bad type:
+     minget -p 0 /home/pn-cs453/Given/Asgn5/Images/BrokenStuff README /dev/stdout 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+116) minget: superblock with bad magic:
+     minget -p 1 /home/pn-cs453/Given/Asgn5/Images/BrokenStuff README /dev/stdout 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+118) minget: partition table with bad magic:
+     minget -p 2 -s 0 /home/pn-cs453/Given/Asgn5/Images/BrokenStuff README /dev/stdout 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+119) minls:  trying to traverse a file:
+     minls /home/pn-cs453/Given/Asgn5/Images/WeirdStuff NotADir/This_file_does_not_exist 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+120) minget: trying to traverse a file:
+     minget /home/pn-cs453/Given/Asgn5/Images/WeirdStuff NotADir/This_file_does_not_exist /dev/stdout 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+121) minget: trying to get a symlink:
+     minget /home/pn-cs453/Given/Asgn5/Images/WeirdStuff SymLink 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+
+
+-----------------
+122) minget: trying to get a directory:
+     minget /home/pn-cs453/Given/Asgn5/Images/TestImage src /dev/stdout 
+-----------------
+ This test was expected to fail, but reports success.
+ Perhaps a bad exit status?
+FAILED.
+
+

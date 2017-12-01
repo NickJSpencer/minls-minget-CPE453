@@ -32,6 +32,8 @@
    #define MASK_OT_X 0000001
  
    #define GET_PERM(mode, mask, c) ( (((mode)&(mask)) == mask) ? c : '-' )
+   #define MIN(a,b) (((a)<(b))?(a):(b))
+   #define MAX(a,b) (((a)>(b))?(a):(b))
 
    /* Minix Version 3 Superblock
     * this structure found in fs/super.h
@@ -90,6 +92,8 @@
    struct inode *inodes;   
    struct partition part;
 
+   unsigned int zonesize;
+
    short p_flag;
    short s_flag;
    short h_flag;
@@ -102,7 +106,9 @@
 
    char *image_file;
    char **src_path;
+   char *src_path_string;
    char **dst_path;
+   char *dst_path_string;
   
    int src_path_count;
    int dst_path_count;
@@ -125,12 +131,14 @@
 
    struct inode *get_directory_inode(FILE *fd, struct inode *node, int);
    struct directory *get_inodes_in_dir(FILE *fd, struct inode *node);
+   void fill_dir(FILE *image, struct directory *dir, int location, int size);
 
    void print_partition(struct partition part);
    void print_super_block(struct superblock sb);
    void print_usage(char *argv[]);
    void print_inode(struct inode * node);
    void print_file(struct inode *node, char *name);
+   void print_single_file_contents(struct inode *node);
    char *get_time(uint32_t);
    char *get_mode(uint16_t);
 
