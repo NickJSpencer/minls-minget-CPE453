@@ -61,7 +61,9 @@ int main(int argc, char *argv[])
    if ((node->mode & MASK_DIR) == MASK_DIR) {
       print_path();
       printf(":\n");
+      /* Load all files in dir */
       struct directory *dir = get_inodes_in_dir(image_file_fd, node);
+      /* Print files */
       for (i = 0; i < node->size / 64; i++) {
          if (dir[i].inode != 0)
          {
@@ -73,7 +75,6 @@ int main(int argc, char *argv[])
    /* File */
    else {
       print_single_file_contents(node);
-
       printf("%s", src_path_string); 
       printf("\n");
   }

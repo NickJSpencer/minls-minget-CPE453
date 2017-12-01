@@ -195,6 +195,7 @@ void get_bitmaps(FILE *image)
    }
 }
 
+/* Load in all inodes on filesystem */
 void get_inodes(FILE *image)
 {
    /* Allocate memory for local inode list */
@@ -216,6 +217,7 @@ void get_inodes(FILE *image)
    }
 }
 
+/* Copy all data from node into dst */
 void set_file_data(FILE *image, struct inode *node, uint8_t *dst) {
    unsigned int zone;
    int i;
@@ -241,14 +243,15 @@ void set_file_data(FILE *image, struct inode *node, uint8_t *dst) {
             perror("fseek");
             exit(ERROR);
          }
-
+         
+         /* Load src info into a local buffer */
          uint8_t buffer[min_size];
          if (!fread(buffer, 1, min_size, image)) {
             perror("1fread");
             exit(ERROR);
          }
 
-         /* Write data to dst file */
+         /* Write local buffer data to dst */
          if (!memcpy(dst + node->size - bytes_left, buffer, min_size)) {
             perror("memcpy");
             exit(ERROR);
@@ -282,22 +285,28 @@ void set_file_data(FILE *image, struct inode *node, uint8_t *dst) {
          }
       }
       else {
+         /* Seek to memory in src */
          if(fseek(image, part_start + zone * zonesize, SEEK_SET) != 0) {
             perror("fseek");
             exit(ERROR);
          }
-
+      
+         /* Attempt to read data from src into local buffer */
          uint8_t buffer[min_size];
          if (!fread(buffer, 1, min_size, image)) {
+            /* Exit on failure */
             if (errno) {
                perror("fread");
                exit(ERROR);
             }
+            /* If src memory was empty, then we can just write 0's into dst */
             if (!memset(dst + node->size - bytes_left, 0, min_size)) {
                perror("memset");
                exit(ERROR);
             }
-         }  
+         }
+         /* If write into local buffer was successful, move data from local
+          * buffer to dst */
          else if(!memcpy(dst + node->size - bytes_left, buffer, min_size)) {
             perror("memcpy");
             exit(ERROR);
@@ -308,6 +317,7 @@ void set_file_data(FILE *image, struct inode *node, uint8_t *dst) {
    
 }
 
+/* Get dir from inode */
 struct directory *get_inodes_in_dir(FILE *image, struct inode *node) {
    /* Allocate enough directory objects for all directories in
     * this inode's data zone */
@@ -383,6 +393,7 @@ struct directory *get_inodes_in_dir(FILE *image, struct inode *node) {
    return dir;
 }
 
+/* Populate a directory object */
 void fill_dir(FILE *image, struct directory *dir, int location, int size)
 {
    if (location != 0)
@@ -403,6 +414,8 @@ void fill_dir(FILE *image, struct directory *dir, int location, int size)
    }
 }
 
+/* Return inode corresponding to provided source path 
+ * by starting at root and recursively moving through i-node chain */
 struct inode* get_directory_inode(FILE *image, struct inode *node, int arg)
 {
    int i;

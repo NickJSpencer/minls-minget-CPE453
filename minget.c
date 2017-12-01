@@ -7,7 +7,6 @@
 int main(int argc, char *argv[])
 {
    FILE *image_file_fd;
-   int i;
 
    if (argc < 2) {
       print_usage(argv);
@@ -41,22 +40,29 @@ int main(int argc, char *argv[])
       exit(ERROR);
    }
 
+   /* Load inode for provided source path */
    struct inode *node = get_directory_inode(image_file_fd, &inodes[0], 0);
    if (!node->size) {
       return SUCCESS;
    }
 
+   /* Error out if file is dir or sym link */
    if((node->mode & MASK_DIR) == MASK_DIR || 
       (node->mode & FILE_TYPE) == SYM_LINK_TYPE) { 
       exit(ERROR);
    }
   
+   /* Load in files data into a local buffer */
    uint8_t *dyn_dest = malloc(node->size);
    set_file_data(image_file_fd, node, dyn_dest);
 
+   /* If no destination file was provided, write the local buffer contents 
+    * to stdout */
    if (!dst_path_count) {
       fwrite(dyn_dest, 1, node->size, stdout);
    }
+   /* Otherwise open the destination file and write local buffer contents 
+    * there */
    else {
       FILE *output;
       if ((output = fopen(dst_path_string, "w")) == NULL) {

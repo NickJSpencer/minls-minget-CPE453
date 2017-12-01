@@ -116,8 +116,8 @@
    int src_path_count;
    int dst_path_count;
 
-   char *inode_bitmap;
-   char *zone_bitmap;
+   uint8_t *inode_bitmap;
+   uint8_t *zone_bitmap;
 
    int parse_cmd_line(int argc, char *argv[]);
    char **parse_path(char *string, int *path_count);
