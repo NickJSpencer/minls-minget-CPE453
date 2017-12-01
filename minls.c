@@ -12,13 +12,7 @@ void print_path() {
       printf("/");
       return;
    }
-   int i;
-
    printf("%s", src_path_string);
-   
-   /*for (i = 0; i < src_path_count; i++) {
-      printf("/%s", src_path[i]);
-   }*/
 }
 
 int main(int argc, char *argv[])
@@ -68,9 +62,7 @@ int main(int argc, char *argv[])
       print_path();
       printf(":\n");
       struct directory *dir = get_inodes_in_dir(image_file_fd, node);
-      //printf("size of dir: %d\n", sizeof(*dir));
       for (i = 0; i < node->size / 64; i++) {
-         //printf("dir value: %d\n", dir[i].inode - 1);
          if (dir[i].inode != 0)
          {
             print_file(&inodes[dir[i].inode - 1], (char *)dir[i].name);
@@ -83,16 +75,6 @@ int main(int argc, char *argv[])
       print_single_file_contents(node);
 
       printf("%s", src_path_string); 
-      /*for (i = 0; i < src_path_count; i++) {
-         if (src_path_count > 1)
-         {
-            printf("/%s", src_path[i]);
-         }
-         else
-         {
-            printf("%s", src_path[i]);
-         }
-      }*/
       printf("\n");
   }
 

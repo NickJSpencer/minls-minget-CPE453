@@ -3,6 +3,6 @@
 rm *.o
 rm minls
 
-make minls
+make minget
 
-./minls $@
+./minget $@

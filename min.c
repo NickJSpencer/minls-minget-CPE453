@@ -210,15 +210,13 @@ struct directory *get_inodes_in_dir(FILE *image, struct inode *node) {
     * this inode's data zone */
    struct directory *dir = (struct directory *) malloc(node->size);
    int i = 0;
-   int i_max = 7;
-   int size;
+   int i_max = DIRECT_ZONES;
    int bytes_left = node->size;
-   int seek_to;
    int direct = 1;
    int indirect = 0;
    struct directory *dir_ptr = dir;
    int indirect_zone_offset = 0;
-   unsigned int zone = node->zone[0];
+   unsigned int zone;
    
    while (bytes_left > 0)
    {
@@ -232,8 +230,8 @@ struct directory *get_inodes_in_dir(FILE *image, struct inode *node) {
             fill_dir(image, dir_ptr, part_start + node->zone[i] * zonesize, 
                   min_size);
             
-            bytes_left = bytes_left - min_size;
-            dir_ptr = dir_ptr + (min_size / sizeof(struct directory));
+            bytes_left -= min_size;
+            dir_ptr += (min_size / sizeof(struct directory));
             i++;
          }
          else
@@ -261,15 +259,15 @@ struct directory *get_inodes_in_dir(FILE *image, struct inode *node) {
                exit(ERROR);
             }
 
-            indirect_zone_offset = indirect_zone_offset + 4;
+            indirect_zone_offset += 4;
 
             int min_size = MIN(bytes_left, zonesize);
 
             fill_dir(image, dir_ptr, part_start + zone * zonesize, 
                   min_size);
 
-            bytes_left = bytes_left - min_size;
-            dir_ptr = dir_ptr + (min_size / sizeof(struct directory));
+            bytes_left -= min_size;
+            dir_ptr += (min_size / sizeof(struct directory));
             i++;
          }
          else
@@ -296,7 +294,7 @@ void fill_dir(FILE *image, struct directory *dir, int location, int size)
       if (!fread(dir, sizeof(struct directory), 
             size / sizeof(struct directory),  image))
       {
-          perror("8fread");
+          perror("fread");
           exit(ERROR);
       }
    }
@@ -331,7 +329,6 @@ struct inode* get_directory_inode(FILE *image, struct inode *node, int arg)
             arg++;
             struct inode *ret = get_directory_inode(image, 
                &inodes[dir[i].inode - 1], arg);
-            //print_inode(ret);
             return ret;
          }
       }
@@ -378,7 +375,7 @@ void print_partition(struct partition part)
    fprintf(stderr, "end_head     %d\n", part.end_head);
    fprintf(stderr, "end_sec      %d\n", part.end_sec);
    fprintf(stderr, "end_cyl      %d\n", part.end_cyl);
-   fprintf(stderr, "lFirst       %lu\n", part.lFirst);
+   fprintf(stderr, "lFirst       %lu\n", (unsigned long) part.lFirst);
    fprintf(stderr, "size         %d\n", part.size);
 }
 
@@ -392,7 +389,7 @@ void print_super_block(struct superblock sb)
    fprintf(stderr, "  firstdata      %d\n", sb.firstdata);
    fprintf(stderr, "  log_zone_size  %d (zone size: %d)\n",
          sb.log_zone_size, zonesize);
-   fprintf(stderr, "  max_file       %lu\n", (long unsigned int) sb.max_file);
+   fprintf(stderr, "  max_file       %d\n", sb.max_file);
    fprintf(stderr, "  magic          0x%04x\n", sb.magic);
    fprintf(stderr, "  zones          %d\n", sb.zones);
    fprintf(stderr, "  blocksize      %d\n", sb.blocksize);
@@ -426,9 +423,6 @@ void print_inode(struct inode * node)
 }
 
 void print_file(struct inode *node, char *name) {
-   //printf("%s", get_mode(node->mode));
-   //printf("%8d", node->size);
-   //printf("%s\n", name);
    printf("%s%8d %s", get_mode(node->mode), node->size, name);
 }
 
@@ -554,9 +548,7 @@ int parse_cmd_line(int argc, char *argv[])
       s_path = argv[imageLoc++];
       src_path_string = (char *) malloc(strlen(s_path) + 1);
       strcpy(src_path_string, s_path);
-      //printf("%s\n", src_path_string);
       src_path = parse_path(s_path, &src_path_count);
-      //printf("%s\n", src_path_string);
    }
    if (imageLoc < argc) {
       d_path = argv[imageLoc++];
