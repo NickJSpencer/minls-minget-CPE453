@@ -305,21 +305,21 @@ void fill_dir(FILE *image, struct directory *dir, int location, int size)
 struct inode* get_directory_inode(FILE *image, struct inode *node, int arg)
 {
    int i;
- 
+  
+   if (((node->mode & MASK_DIR) != MASK_DIR) && arg < src_path_count)
+   {
+      fprintf(stderr, "Error: Incorrect source path\n");
+      exit(ERROR);
+   }
+   
    if ((node->mode & REGULAR_FILE) == REGULAR_FILE) {
       return node;
    }
-   if ((node->mode & MASK_DIR) != MASK_DIR)
-      {
-         fprintf(stderr, "Error: Incorrect source path\n");
-         exit(ERROR);
-      }
+  
    struct directory *dir = get_inodes_in_dir(image, node);
-   //fprintf(stderr, "src_path_count = %d | arg = %d\n", src_path_count, arg);
+   
    if (arg < src_path_count)
-   {
-      
-
+   {   
       for (i = 0; i < node->size / 64; i++)
       {
          if (!strcmp(src_path[arg], (char *) dir[i].name)) 
