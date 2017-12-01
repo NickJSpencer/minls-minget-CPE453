@@ -50,15 +50,17 @@ int main(int argc, char *argv[])
       exit(ERROR);
    }
   
-   FILE *output;
-   if (dst_path_count && (output = fopen(dst_path_string, "w")) == NULL) {
-      perror("open");
-      exit(ERROR);
+   if (!dst_path_count) {
+      set_file_data(image_file_fd, node, stdout);
    }
    else {
-      output = stdout;
+      FILE *output;
+      if ((output = fopen(dst_path_string, "w")) == NULL) {
+         perror("open");
+         exit(ERROR);
+      }
+      set_file_data(image_file_fd, node, output);
    }
-   set_file_data(image_file_fd, node, output);
   
    return SUCCESS;
 }
