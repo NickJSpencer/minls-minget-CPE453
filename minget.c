@@ -38,8 +38,19 @@ int main(int argc, char *argv[])
    }
 
    struct inode *node = get_directory_inode(image_file_fd, &inodes[0], 0);
-
+   if (!node->size) {
+      return SUCCESS;
+   }
    
+   FILE *output;
+   if (dst_path_count && (output = fopen(dst_path_string, "w")) == NULL) {
+      perror("open");
+      exit(ERROR);
+   }
+   else {
+      output = stdout;
+   }
+   set_file_data(image_file_fd, node, output);
   
    return SUCCESS;
 }

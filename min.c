@@ -205,6 +205,62 @@ void get_inodes(FILE *image)
    }
 }
 
+void set_file_data(FILE *image, struct inode *node, FILE *dst) {
+   unsigned int zone;
+   int indirect_zone_offset = 0;
+   int bytes_left = node->size;
+
+   /* Iterate through inodes direct zones */
+   for(int i = 0; i < DIRECT_ZONES && bytes_left > 0; i++) {
+      
+      /* Find size of write */
+      int min_size = MIN(bytes_left, zonesize);
+      
+      /* Seek to src location in image */
+      if(fseek(image, part_start + node->zone[i] * zonesize, SEEK_SET) != 0) {
+         perror("fseek");
+         exit(ERROR);
+      }
+
+      uint8_t buffer[min_size];
+      if (!fread(buffer, 1, min_size, image)) {
+         perror("fread");
+         exit(ERROR);
+      }
+
+      /* Write data to dst file */
+      fwrite(buffer, 1, min_size, dst + node->size - bytes_left);
+
+      bytes_left -= min_size;
+   }
+
+   /* Iterate through indirect zones */
+   for(int i = 0; i < zonesize/4 && bytes_left > 0; i++) {
+      /* Seek to entry in indirect table */
+      if (fseek(image, node->indirect * indirect_zone_offset * zonesize, SEEK_SET) != 0) {
+         perror("fseek");
+         exit(ERROR);
+      }
+      /* Load value of entry */
+      if (!fread(&zone, sizeof(unsigned int), 1, image)) {
+         perror("fread");
+         exit(ERROR);
+      }
+      indirect_zone_offset += 4;
+
+      int min_size = MIN(bytes_left, zonesize);
+      
+      if(fseek(image, part_start + zone * zonesize, SEEK_SET) != 0) {
+         perror("fseek");
+         exit(ERROR);
+      }
+
+      fwrite(image, min_size, 1, dst + node->size - bytes_left);
+
+      bytes_left -= min_size;
+   }
+}
+
 struct directory *get_inodes_in_dir(FILE *image, struct inode *node) {
    /* Allocate enough directory objects for all directories in
     * this inode's data zone */

@@ -132,6 +132,7 @@
    struct inode *get_directory_inode(FILE *fd, struct inode *node, int);
    struct directory *get_inodes_in_dir(FILE *fd, struct inode *node);
    void fill_dir(FILE *image, struct directory *dir, int location, int size);
+   void set_file_data(FILE *image, struct inode *node, FILE *dst);
 
    void print_partition(struct partition part);
    void print_super_block(struct superblock sb);
